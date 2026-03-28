@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: job-service
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+  data:
+    redis:
+      repositories:
+        enabled: false
+  rabbitmq:
+    enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: testsecrettestsecrettestsecrettestsecrettestsecrettestsecrettestsecret

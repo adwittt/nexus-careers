@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">auth-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.auth.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.nexus.auth.config;
+
+import com.nexus.auth.security.JwtAuthenticationFilter;
+import com.nexus.auth.security.OAuth2LoginSuccessHandler;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.Ordered;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+/**
+ * Spring Security configuration with JWT and CORS support.
+ */
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserDetailsService userDetailsService, 
+<span class="fc" id="L44">                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {</span>
+<span class="fc" id="L45">        this.jwtAuthFilter = jwtAuthFilter;</span>
+<span class="fc" id="L46">        this.userDetailsService = userDetailsService;</span>
+<span class="fc" id="L47">        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;</span>
+<span class="fc" id="L48">    }</span>
+
+
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L55">        http</span>
+<span class="fc" id="L56">            .securityMatcher(&quot;/actuator/**&quot;)</span>
+<span class="fc" id="L57">            .authorizeHttpRequests(auth -&gt; auth.anyRequest().permitAll())</span>
+<span class="fc" id="L58">            .csrf(AbstractHttpConfigurer::disable);</span>
+<span class="fc" id="L59">        return http.build();</span>
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="fc" id="L64">        http</span>
+<span class="fc" id="L65">            .csrf(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L66">            .cors(cors -&gt; cors.configurationSource(corsConfigurationSource()))</span>
+<span class="fc" id="L67">            .authorizeHttpRequests(auth -&gt; auth</span>
+                // Public endpoints
+<span class="fc" id="L69">                .requestMatchers(</span>
+                    &quot;/api/auth/register&quot;,
+                    &quot;/api/auth/login&quot;,
+                    &quot;/api/auth/forgot-password&quot;,
+                    &quot;/api/auth/reset-password&quot;,
+                    &quot;/v3/api-docs/**&quot;,
+                    &quot;/swagger-ui/**&quot;,
+                    &quot;/swagger-ui.html&quot;,
+                    &quot;/actuator/**&quot;
+<span class="fc" id="L78">                ).permitAll()</span>
+                // Admin only
+<span class="fc" id="L80">                .requestMatchers(&quot;/api/auth/admin/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+                // All other requests need authentication
+<span class="fc" id="L82">                .anyRequest().authenticated()</span>
+            )
+<span class="fc" id="L84">            .sessionManagement(session -&gt;</span>
+<span class="fc" id="L85">                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+            )
+<span class="fc" id="L87">            .oauth2Login(oauth2 -&gt; oauth2</span>
+<span class="fc" id="L88">                .successHandler(oAuth2LoginSuccessHandler)</span>
+            )
+<span class="fc" id="L90">            .authenticationProvider(authenticationProvider())</span>
+<span class="fc" id="L91">            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);</span>
+
+<span class="fc" id="L93">        return http.build();</span>
+    }
+    
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+<span class="fc" id="L98">        return (web) -&gt; web.ignoring().requestMatchers(&quot;/actuator/**&quot;);</span>
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+<span class="fc" id="L103">        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();</span>
+<span class="fc" id="L104">        provider.setUserDetailsService(userDetailsService);</span>
+<span class="fc" id="L105">        provider.setPasswordEncoder(passwordEncoder());</span>
+<span class="fc" id="L106">        return provider;</span>
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+<span class="fc" id="L111">        return config.getAuthenticationManager();</span>
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L116">        return new BCryptPasswordEncoder();</span>
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+<span class="fc" id="L121">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="fc" id="L122">        configuration.setAllowedOrigins(List.of(&quot;http://localhost:3000&quot;, &quot;http://localhost:5173&quot;));</span>
+<span class="fc" id="L123">        configuration.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L124">        configuration.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L125">        configuration.setAllowCredentials(true);</span>
+
+<span class="fc" id="L127">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L128">        source.registerCorsConfiguration(&quot;/**&quot;, configuration);</span>
+<span class="fc" id="L129">        return source;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

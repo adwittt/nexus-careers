@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">job-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.job.service</a> &gt; <span class="el_source">JobCommandService.java</span></div><h1>JobCommandService.java</h1><pre class="source lang-java linenums">package com.nexus.job.service;
+
+import com.nexus.job.dto.JobDtos.*;
+import com.nexus.job.entity.Job;
+import com.nexus.job.entity.JobType;
+import com.nexus.job.exception.ResourceNotFoundException;
+import com.nexus.job.exception.UnauthorizedException;
+import com.nexus.job.mapper.JobMapper;
+import com.nexus.job.repository.JobRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional
+public class JobCommandService {
+<span class="fc" id="L21">    private static final Logger log = LoggerFactory.getLogger(JobCommandService.class);</span>
+    private final JobRepository jobRepository;
+    private final JobMapper jobMapper;
+
+<span class="fc" id="L25">    public JobCommandService(JobRepository jobRepository, JobMapper jobMapper) {</span>
+<span class="fc" id="L26">        this.jobRepository = jobRepository;</span>
+<span class="fc" id="L27">        this.jobMapper = jobMapper;</span>
+<span class="fc" id="L28">    }</span>
+
+    @CacheEvict(value = {&quot;jobs&quot;, &quot;job&quot;}, allEntries = true)
+    public JobResponse createJob(CreateJobRequest request, Long recruiterId, String recruiterName) {
+<span class="fc" id="L32">        Job job = Job.builder()</span>
+<span class="fc" id="L33">                .title(request.getTitle())</span>
+<span class="fc" id="L34">                .companyName(request.getCompanyName())</span>
+<span class="fc" id="L35">                .location(request.getLocation())</span>
+<span class="fc" id="L36">                .salary(request.getSalary())</span>
+<span class="fc" id="L37">                .experience(request.getExperience())</span>
+<span class="fc" id="L38">                .description(request.getDescription())</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                .requiredSkills(request.getRequiredSkills() != null ? request.getRequiredSkills() : List.of())</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">                .jobType(request.getJobType() != null ? request.getJobType() : JobType.FULL_TIME)</span>
+<span class="fc" id="L41">                .postedBy(recruiterId)</span>
+<span class="fc" id="L42">                .recruiterName(recruiterName)</span>
+<span class="fc" id="L43">                .build();</span>
+<span class="fc" id="L44">        Job saved = jobRepository.save(job);</span>
+<span class="fc" id="L45">        log.info(&quot;Job created: '{}' by recruiter {}&quot;, saved.getTitle(), recruiterId);</span>
+<span class="fc" id="L46">        return jobMapper.toResponse(saved);</span>
+    }
+
+    @CacheEvict(value = {&quot;jobs&quot;, &quot;job&quot;}, allEntries = true)
+    public JobResponse updateJob(Long jobId, UpdateJobRequest request, Long recruiterId) {
+<span class="fc" id="L51">        Job job = jobRepository.findById(jobId).orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Job not found: &quot; + jobId));</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (!job.getPostedBy().equals(recruiterId)) throw new UnauthorizedException(&quot;You are not authorized to update this job&quot;);</span>
+        
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (request.getTitle() != null) job.setTitle(request.getTitle());</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        if (request.getCompanyName() != null) job.setCompanyName(request.getCompanyName());</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (request.getLocation() != null) job.setLocation(request.getLocation());</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (request.getSalary() != null) job.setSalary(request.getSalary());</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        if (request.getExperience() != null) job.setExperience(request.getExperience());</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (request.getDescription() != null) job.setDescription(request.getDescription());</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (request.getRequiredSkills() != null) job.setRequiredSkills(request.getRequiredSkills());</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (request.getJobType() != null) job.setJobType(request.getJobType());</span>
+        
+<span class="fc" id="L63">        return jobMapper.toResponse(jobRepository.save(job));</span>
+    }
+
+    @CacheEvict(value = {&quot;jobs&quot;, &quot;job&quot;}, allEntries = true)
+    public ApiResponse deleteJob(Long jobId, Long recruiterId) {
+<span class="fc" id="L68">        Job job = jobRepository.findById(jobId).orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Job not found: &quot; + jobId));</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (!job.getPostedBy().equals(recruiterId)) throw new UnauthorizedException(&quot;You are not authorized to delete this job&quot;);</span>
+        
+<span class="fc" id="L71">        job.setActive(false);</span>
+<span class="fc" id="L72">        jobRepository.save(job);</span>
+<span class="fc" id="L73">        log.info(&quot;Job {} soft-deleted by recruiter {}&quot;, jobId, recruiterId);</span>
+<span class="fc" id="L74">        return new ApiResponse(true, &quot;Job deleted successfully&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

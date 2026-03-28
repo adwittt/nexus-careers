@@ -1,0 +1,6 @@
+projectKey=config-server
+serverUrl=http://localhost:9000
+serverVersion=10.7.0.96327
+dashboardUrl=http://localhost:9000/dashboard?id=config-server
+ceTaskId=5dbe75c9-3a5a-4c82-9932-6a83458515c9
+ceTaskUrl=http://localhost:9000/api/ce/task?id=5dbe75c9-3a5a-4c82-9932-6a83458515c9

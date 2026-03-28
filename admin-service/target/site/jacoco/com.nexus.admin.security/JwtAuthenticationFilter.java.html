@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">admin-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.admin.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.nexus.admin.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+<span class="fc" id="L21">    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);</span>
+
+    private static final String ROLE_PREFIX = &quot;ROLE_&quot;;
+    private final JwtUtil jwtUtil;
+
+<span class="fc" id="L26">    public JwtAuthenticationFilter(JwtUtil jwtUtil) {</span>
+<span class="fc" id="L27">        this.jwtUtil = jwtUtil;</span>
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+        // Trust gateway-injected headers
+<span class="fc" id="L38">        String userEmail = request.getHeader(&quot;X-User-Email&quot;);</span>
+<span class="fc" id="L39">        String userRole  = request.getHeader(&quot;X-User-Role&quot;);</span>
+
+<span class="pc bpc" id="L41" title="1 of 4 branches missed.">        if (userEmail != null &amp;&amp; userRole != null) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            String authorityName = userRole.startsWith(ROLE_PREFIX) ? userRole : ROLE_PREFIX + userRole;</span>
+<span class="fc" id="L43">            var auth = new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L44">                    userEmail, null, List.of(new SimpleGrantedAuthority(authorityName)));</span>
+<span class="fc" id="L45">            SecurityContextHolder.getContext().setAuthentication(auth);</span>
+<span class="fc" id="L46">            filterChain.doFilter(request, response);</span>
+<span class="fc" id="L47">            return;</span>
+        }
+
+        // Direct call fallback
+<span class="fc" id="L51">        String authHeader = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="pc bpc" id="L52" title="1 of 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="fc" id="L53">            String token = authHeader.substring(7);</span>
+            try {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                if (jwtUtil.isTokenValid(token)) {</span>
+<span class="fc" id="L56">                    String email = jwtUtil.extractUsername(token);</span>
+<span class="fc" id="L57">                    String role  = jwtUtil.extractRole(token);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">                    String authorityName = role.startsWith(ROLE_PREFIX) ? role : ROLE_PREFIX + role;</span>
+<span class="fc" id="L59">                    var auth = new UsernamePasswordAuthenticationToken(</span>
+<span class="fc" id="L60">                            email, null, List.of(new SimpleGrantedAuthority(authorityName)));</span>
+<span class="fc" id="L61">                    SecurityContextHolder.getContext().setAuthentication(auth);</span>
+                }
+<span class="fc" id="L63">            } catch (Exception e) {</span>
+<span class="fc" id="L64">                log.error(&quot;JWT error: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L65">            }</span>
+        }
+
+<span class="fc" id="L68">        filterChain.doFilter(request, response);</span>
+<span class="fc" id="L69">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

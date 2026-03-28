@@ -1,0 +1,6 @@
+projectKey=nexus-application
+serverUrl=http://localhost:9000
+serverVersion=10.7.0.96327
+dashboardUrl=http://localhost:9000/dashboard?id=nexus-application
+ceTaskId=e0c04036-5e47-485b-839a-2234b5be2691
+ceTaskUrl=http://localhost:9000/api/ce/task?id=e0c04036-5e47-485b-839a-2234b5be2691

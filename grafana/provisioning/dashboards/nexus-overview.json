@@ -1,0 +1,192 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Services Up",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "count(up{job=\"nexus-microservices\"} == 1)",
+          "legendFormat": "Up",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "green", "value": 7 }
+            ]
+          },
+          "unit": "none"
+        }
+      }
+    },
+    {
+      "title": "JVM Heap Used",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"} / 1024 / 1024",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "MiB",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "gradientMode": "scheme" }
+        }
+      }
+    },
+    {
+      "title": "HTTP Request Rate (per second)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "sum by (instance) (rate(http_server_requests_seconds_count[1m]))",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "scheme" }
+        }
+      }
+    },
+    {
+      "title": "HTTP Response Time (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, instance) (rate(http_server_requests_seconds_bucket[5m])))",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "scheme" }
+        }
+      }
+    },
+    {
+      "title": "JVM Threads",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads{job=\"nexus-microservices\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "scheme" }
+        }
+      }
+    },
+    {
+      "title": "System CPU Usage",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "avg(system_cpu_usage{job=\"nexus-microservices\"}) * 100",
+          "legendFormat": "CPU %",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Process CPU Usage per Service",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "process_cpu_usage{job=\"nexus-microservices\"} * 100",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "scheme" }
+        }
+      }
+    },
+    {
+      "title": "Database Connection Pool",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "" },
+      "targets": [
+        {
+          "expr": "hikaricp_connections_active{job=\"nexus-microservices\"}",
+          "legendFormat": "active - {{instance}}",
+          "refId": "A"
+        },
+        {
+          "expr": "hikaricp_connections_idle{job=\"nexus-microservices\"}",
+          "legendFormat": "idle - {{instance}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "scheme" }
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["nexus", "spring-boot", "jvm"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Nexus Careers — Service Monitoring",
+  "uid": "nexus-overview",
+  "version": 1
+}

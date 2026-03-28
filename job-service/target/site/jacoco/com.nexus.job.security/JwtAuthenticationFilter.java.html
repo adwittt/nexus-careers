@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">job-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.job.security</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.nexus.job.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * JWT filter for Job Service.
+ * Validates JWT from Authorization header OR X-User-* headers set by API Gateway.
+ */
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+<span class="fc" id="L25">    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);</span>
+
+    private final JwtUtil jwtUtil;
+
+<span class="fc" id="L29">    public JwtAuthenticationFilter(JwtUtil jwtUtil) {</span>
+<span class="fc" id="L30">        this.jwtUtil = jwtUtil;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+        // Try gateway-injected headers first (preferred path via API Gateway)
+<span class="nc" id="L41">        String userEmail = request.getHeader(&quot;X-User-Email&quot;);</span>
+<span class="nc" id="L42">        String userRole = request.getHeader(&quot;X-User-Role&quot;);</span>
+
+<span class="nc bnc" id="L44" title="All 4 branches missed.">        if (userEmail != null &amp;&amp; userRole != null) {</span>
+            // Trust gateway-injected headers
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            String authorityName = userRole.startsWith(&quot;ROLE_&quot;) ? userRole : &quot;ROLE_&quot; + userRole;</span>
+<span class="nc" id="L47">            var authority = new SimpleGrantedAuthority(authorityName);</span>
+<span class="nc" id="L48">            var authToken = new UsernamePasswordAuthenticationToken(userEmail, null, List.of(authority));</span>
+<span class="nc" id="L49">            SecurityContextHolder.getContext().setAuthentication(authToken);</span>
+<span class="nc" id="L50">            filterChain.doFilter(request, response);</span>
+<span class="nc" id="L51">            return;</span>
+        }
+
+        // Fallback: direct JWT validation (when calling service directly)
+<span class="nc" id="L55">        String authHeader = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="nc" id="L57">            String token = authHeader.substring(7);</span>
+            try {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                if (jwtUtil.isTokenValid(token)) {</span>
+<span class="nc" id="L60">                    String email = jwtUtil.extractUsername(token);</span>
+<span class="nc" id="L61">                    String role = jwtUtil.extractRole(token);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                    String authorityName = role.startsWith(&quot;ROLE_&quot;) ? role : &quot;ROLE_&quot; + role;</span>
+<span class="nc" id="L63">                    var authority = new SimpleGrantedAuthority(authorityName);</span>
+<span class="nc" id="L64">                    var authToken = new UsernamePasswordAuthenticationToken(email, null, List.of(authority));</span>
+<span class="nc" id="L65">                    SecurityContextHolder.getContext().setAuthentication(authToken);</span>
+                }
+<span class="nc" id="L67">            } catch (Exception e) {</span>
+<span class="nc" id="L68">                log.error(&quot;JWT auth error: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L69">            }</span>
+        }
+
+<span class="nc" id="L72">        filterChain.doFilter(request, response);</span>
+<span class="nc" id="L73">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

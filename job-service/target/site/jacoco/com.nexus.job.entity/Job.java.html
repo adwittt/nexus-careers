@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Job.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">job-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.job.entity</a> &gt; <span class="el_source">Job.java</span></div><h1>Job.java</h1><pre class="source lang-java linenums">package com.nexus.job.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Job entity representing a job posting on the portal.
+ */
+@Entity
+@Table(name = &quot;jobs&quot;)
+public class Job implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = &quot;Job title is required&quot;)
+    @Column(nullable = false)
+    private String title;
+
+    @NotBlank(message = &quot;Company name is required&quot;)
+    @Column(name = &quot;company_name&quot;, nullable = false)
+    private String companyName;
+
+    @NotBlank(message = &quot;Location is required&quot;)
+    @Column(nullable = false)
+    private String location;
+
+    private String salary;
+    private String experience;
+
+    @Column(columnDefinition = &quot;TEXT&quot;)
+    private String description;
+
+<span class="fc" id="L43">    @ElementCollection(fetch = FetchType.EAGER)</span>
+    @CollectionTable(name = &quot;job_skills&quot;, joinColumns = @JoinColumn(name = &quot;job_id&quot;))
+    @Column(name = &quot;skill&quot;)
+    private List&lt;String&gt; requiredSkills = new ArrayList&lt;&gt;();
+
+<span class="fc" id="L48">    @Enumerated(EnumType.STRING)</span>
+    @Column(name = &quot;job_type&quot;, nullable = false)
+    private JobType jobType = JobType.FULL_TIME;
+
+    @Column(name = &quot;posted_by&quot;)
+    private Long postedBy;
+
+    @Column(name = &quot;recruiter_name&quot;)
+    private String recruiterName;
+
+<span class="fc" id="L58">    @Column(name = &quot;is_active&quot;)</span>
+    private boolean isActive = true;
+
+    @CreationTimestamp
+    @Column(name = &quot;created_at&quot;, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = &quot;updated_at&quot;)
+    private LocalDateTime updatedAt;
+
+    // Constructors
+<span class="fc" id="L70">    public Job() {}</span>
+
+    public Job(Long id, String title, String companyName, String location, String salary, String experience, 
+               String description, List&lt;String&gt; requiredSkills, JobType jobType, Long postedBy, 
+<span class="fc" id="L74">               String recruiterName, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {</span>
+<span class="fc" id="L75">        this.id = id;</span>
+<span class="fc" id="L76">        this.title = title;</span>
+<span class="fc" id="L77">        this.companyName = companyName;</span>
+<span class="fc" id="L78">        this.location = location;</span>
+<span class="fc" id="L79">        this.salary = salary;</span>
+<span class="fc" id="L80">        this.experience = experience;</span>
+<span class="fc" id="L81">        this.description = description;</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        this.requiredSkills = requiredSkills != null ? requiredSkills : new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        this.jobType = jobType != null ? jobType : JobType.FULL_TIME;</span>
+<span class="fc" id="L84">        this.postedBy = postedBy;</span>
+<span class="fc" id="L85">        this.recruiterName = recruiterName;</span>
+<span class="fc" id="L86">        this.isActive = isActive;</span>
+<span class="fc" id="L87">        this.createdAt = createdAt;</span>
+<span class="fc" id="L88">        this.updatedAt = updatedAt;</span>
+<span class="fc" id="L89">    }</span>
+
+    // Getters and Setters
+<span class="fc" id="L92">    public Long getId() { return id; }</span>
+<span class="fc" id="L93">    public void setId(Long id) { this.id = id; }</span>
+<span class="fc" id="L94">    public String getTitle() { return title; }</span>
+<span class="fc" id="L95">    public void setTitle(String title) { this.title = title; }</span>
+<span class="fc" id="L96">    public String getCompanyName() { return companyName; }</span>
+<span class="fc" id="L97">    public void setCompanyName(String companyName) { this.companyName = companyName; }</span>
+<span class="fc" id="L98">    public String getLocation() { return location; }</span>
+<span class="fc" id="L99">    public void setLocation(String location) { this.location = location; }</span>
+<span class="fc" id="L100">    public String getSalary() { return salary; }</span>
+<span class="fc" id="L101">    public void setSalary(String salary) { this.salary = salary; }</span>
+<span class="fc" id="L102">    public String getExperience() { return experience; }</span>
+<span class="fc" id="L103">    public void setExperience(String experience) { this.experience = experience; }</span>
+<span class="fc" id="L104">    public String getDescription() { return description; }</span>
+<span class="fc" id="L105">    public void setDescription(String description) { this.description = description; }</span>
+<span class="fc" id="L106">    public List&lt;String&gt; getRequiredSkills() { return requiredSkills; }</span>
+<span class="fc" id="L107">    public void setRequiredSkills(List&lt;String&gt; requiredSkills) { this.requiredSkills = requiredSkills; }</span>
+<span class="fc" id="L108">    public JobType getJobType() { return jobType; }</span>
+<span class="fc" id="L109">    public void setJobType(JobType jobType) { this.jobType = jobType; }</span>
+<span class="fc" id="L110">    public Long getPostedBy() { return postedBy; }</span>
+<span class="fc" id="L111">    public void setPostedBy(Long postedBy) { this.postedBy = postedBy; }</span>
+<span class="fc" id="L112">    public String getRecruiterName() { return recruiterName; }</span>
+<span class="fc" id="L113">    public void setRecruiterName(String recruiterName) { this.recruiterName = recruiterName; }</span>
+<span class="fc" id="L114">    public boolean isActive() { return isActive; }</span>
+<span class="fc" id="L115">    public void setActive(boolean active) { this.isActive = active; }</span>
+<span class="fc" id="L116">    public LocalDateTime getCreatedAt() { return createdAt; }</span>
+<span class="fc" id="L117">    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }</span>
+<span class="fc" id="L118">    public LocalDateTime getUpdatedAt() { return updatedAt; }</span>
+<span class="fc" id="L119">    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }</span>
+
+    // Manual Builder
+    public static JobBuilder builder() {
+<span class="fc" id="L123">        return new JobBuilder();</span>
+    }
+
+<span class="fc" id="L126">    public static class JobBuilder {</span>
+        private Long id;
+        private String title;
+        private String companyName;
+        private String location;
+        private String salary;
+        private String experience;
+        private String description;
+        private List&lt;String&gt; requiredSkills;
+        private JobType jobType;
+        private Long postedBy;
+        private String recruiterName;
+<span class="fc" id="L138">        private boolean isActive = true;</span>
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+
+<span class="fc" id="L142">        public JobBuilder id(Long id) { this.id = id; return this; }</span>
+<span class="fc" id="L143">        public JobBuilder title(String title) { this.title = title; return this; }</span>
+<span class="fc" id="L144">        public JobBuilder companyName(String companyName) { this.companyName = companyName; return this; }</span>
+<span class="fc" id="L145">        public JobBuilder location(String location) { this.location = location; return this; }</span>
+<span class="fc" id="L146">        public JobBuilder salary(String salary) { this.salary = salary; return this; }</span>
+<span class="fc" id="L147">        public JobBuilder experience(String experience) { this.experience = experience; return this; }</span>
+<span class="fc" id="L148">        public JobBuilder description(String description) { this.description = description; return this; }</span>
+<span class="fc" id="L149">        public JobBuilder requiredSkills(List&lt;String&gt; requiredSkills) { this.requiredSkills = requiredSkills; return this; }</span>
+<span class="fc" id="L150">        public JobBuilder jobType(JobType jobType) { this.jobType = jobType; return this; }</span>
+<span class="fc" id="L151">        public JobBuilder postedBy(Long postedBy) { this.postedBy = postedBy; return this; }</span>
+<span class="fc" id="L152">        public JobBuilder recruiterName(String recruiterName) { this.recruiterName = recruiterName; return this; }</span>
+<span class="fc" id="L153">        public JobBuilder isActive(boolean isActive) { this.isActive = isActive; return this; }</span>
+<span class="fc" id="L154">        public JobBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }</span>
+<span class="fc" id="L155">        public JobBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }</span>
+
+        public Job build() {
+<span class="fc" id="L158">            return new Job(id, title, companyName, location, salary, experience, description, </span>
+                           requiredSkills, jobType, postedBy, recruiterName, isActive, createdAt, updatedAt);
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

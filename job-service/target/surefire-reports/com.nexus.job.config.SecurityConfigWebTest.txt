@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.nexus.job.config.SecurityConfigWebTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.557 s -- in com.nexus.job.config.SecurityConfigWebTest

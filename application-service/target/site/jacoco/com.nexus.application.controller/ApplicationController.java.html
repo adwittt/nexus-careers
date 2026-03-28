@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApplicationController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">application-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.application.controller</a> &gt; <span class="el_source">ApplicationController.java</span></div><h1>ApplicationController.java</h1><pre class="source lang-java linenums">package com.nexus.application.controller;
+
+import com.nexus.application.dto.ApplicationDtos.*;
+import com.nexus.application.service.ApplicationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * REST controller for job application endpoints.
+ * Headers X-User-Id, X-User-Name, X-User-Email injected by API Gateway.
+ */
+@RestController
+@RequestMapping(&quot;/api/applications&quot;)
+@Tag(name = &quot;Applications&quot;, description = &quot;Submit and manage job applications&quot;)
+public class ApplicationController {
+
+    private final ApplicationService applicationService;
+
+<span class="fc" id="L27">    public ApplicationController(ApplicationService applicationService) {</span>
+<span class="fc" id="L28">        this.applicationService = applicationService;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Submit a new job application.
+     * Role: JOB_SEEKER only.
+     */
+    @PostMapping
+    @PreAuthorize(&quot;hasRole('JOB_SEEKER')&quot;)
+    @Operation(summary = &quot;Apply for a job&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;ApplicationResponse&gt; applyForJob(
+            @Valid @RequestBody ApplyRequest request,
+            @RequestHeader(&quot;X-User-Id&quot;) Long userId,
+            @RequestHeader(name = &quot;X-User-Name&quot;, defaultValue = &quot;Unknown&quot;) String userName,
+            @RequestHeader(name = &quot;X-User-Email&quot;, defaultValue = &quot;&quot;) String userEmail) {
+
+<span class="fc" id="L44">        ApplicationResponse response = applicationService.applyForJob(request, userId, userName, userEmail);</span>
+<span class="fc" id="L45">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+    }
+
+    /**
+     * Get current user's applications.
+     * Role: JOB_SEEKER.
+     */
+    @GetMapping(&quot;/user&quot;)
+    @PreAuthorize(&quot;hasRole('JOB_SEEKER')&quot;)
+    @Operation(summary = &quot;Get my applications&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;List&lt;ApplicationResponse&gt;&gt; getMyApplications(
+            @RequestHeader(&quot;X-User-Id&quot;) Long userId) {
+<span class="fc" id="L57">        return ResponseEntity.ok(applicationService.getUserApplications(userId));</span>
+    }
+
+    /**
+     * Get all applications for a job (Recruiter/Admin).
+     */
+    @GetMapping(&quot;/job/{jobId}&quot;)
+    @PreAuthorize(&quot;hasRole('RECRUITER') or hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Get applications for a job&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;List&lt;ApplicationResponse&gt;&gt; getJobApplications(@PathVariable(&quot;jobId&quot;) Long jobId) {
+<span class="fc" id="L67">        return ResponseEntity.ok(applicationService.getJobApplications(jobId));</span>
+    }
+
+    /**
+     * Get a specific application by ID.
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;Get application by ID&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;ApplicationResponse&gt; getApplication(@PathVariable(&quot;id&quot;) Long id) {
+<span class="nc" id="L76">        return ResponseEntity.ok(applicationService.getApplicationById(id));</span>
+    }
+
+    /**
+     * Update application status (Recruiter/Admin only).
+     * Status flow: APPLIED → UNDER_REVIEW → SHORTLISTED or REJECTED
+     */
+    @PutMapping(&quot;/{id}/status&quot;)
+    @PreAuthorize(&quot;hasRole('RECRUITER') or hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Update application status&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;ApplicationResponse&gt; updateStatus(
+            @PathVariable(&quot;id&quot;) Long id,
+            @Valid @RequestBody UpdateStatusRequest request) {
+<span class="nc" id="L89">        return ResponseEntity.ok(applicationService.updateStatus(id, request));</span>
+    }
+
+    /**
+     * Withdraw an application (Job Seeker only).
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    @PreAuthorize(&quot;hasRole('JOB_SEEKER')&quot;)
+    @Operation(summary = &quot;Withdraw application&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;ApiResponse&gt; withdrawApplication(
+            @PathVariable(&quot;id&quot;) Long id,
+            @RequestHeader(&quot;X-User-Id&quot;) Long userId) {
+<span class="fc" id="L101">        return ResponseEntity.ok(applicationService.withdrawApplication(id, userId));</span>
+    }
+
+    /**
+     * Get application status counts (Admin).
+     */
+    @GetMapping(&quot;/stats&quot;)
+    @PreAuthorize(&quot;hasRole('ADMIN')&quot;)
+    @Operation(summary = &quot;Get application stats&quot;, security = @SecurityRequirement(name = &quot;bearerAuth&quot;))
+    public ResponseEntity&lt;StatusCountResponse&gt; getStats() {
+<span class="fc" id="L111">        return ResponseEntity.ok(applicationService.getStatusCounts());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

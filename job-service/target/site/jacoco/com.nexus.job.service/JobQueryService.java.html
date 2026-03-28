@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">job-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.job.service</a> &gt; <span class="el_source">JobQueryService.java</span></div><h1>JobQueryService.java</h1><pre class="source lang-java linenums">package com.nexus.job.service;
+
+import com.nexus.job.dto.JobDtos.*;
+import com.nexus.job.entity.Job;
+import com.nexus.job.entity.JobType;
+import com.nexus.job.exception.ResourceNotFoundException;
+import com.nexus.job.mapper.JobMapper;
+import com.nexus.job.repository.JobRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional(readOnly = true)
+public class JobQueryService {
+<span class="fc" id="L20">    private static final Logger log = LoggerFactory.getLogger(JobQueryService.class);</span>
+    private final JobRepository jobRepository;
+    private final JobMapper jobMapper;
+
+<span class="fc" id="L24">    public JobQueryService(JobRepository jobRepository, JobMapper jobMapper) {</span>
+<span class="fc" id="L25">        this.jobRepository = jobRepository;</span>
+<span class="fc" id="L26">        this.jobMapper = jobMapper;</span>
+<span class="fc" id="L27">    }</span>
+
+    @Cacheable(value = &quot;jobs&quot;)
+    public List&lt;JobResponse&gt; getAllJobs() {
+<span class="fc" id="L31">        return jobRepository.findByIsActiveTrueOrderByCreatedAtDesc().stream().map(jobMapper::toResponse).toList();</span>
+    }
+
+    @Cacheable(value = &quot;job&quot;, key = &quot;#a0&quot;)
+    public JobResponse getJobById(Long id) {
+<span class="fc" id="L36">        Job job = jobRepository.findById(id).orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Job not found with id: &quot; + id));</span>
+<span class="fc" id="L37">        return jobMapper.toResponse(job);</span>
+    }
+
+    public List&lt;JobResponse&gt; searchJobs(String title, String location, String jobType, String experience) {
+<span class="fc" id="L41">        JobType type = null;</span>
+<span class="pc bpc" id="L42" title="1 of 4 branches missed.">        if (jobType != null &amp;&amp; !jobType.isBlank()) {</span>
+<span class="pc" id="L43">            try { type = JobType.valueOf(jobType.toUpperCase()); } catch (IllegalArgumentException e) { log.warn(&quot;Invalid job type filter: {}&quot;, jobType); }</span>
+        }
+<span class="pc bpc" id="L45" title="1 of 4 branches missed.">        String titleParam = (title != null &amp;&amp; !title.isBlank()) ? title : null;</span>
+<span class="pc bpc" id="L46" title="1 of 4 branches missed.">        String locationParam = (location != null &amp;&amp; !location.isBlank()) ? location : null;</span>
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">        String experienceParam = (experience != null &amp;&amp; !experience.isBlank()) ? experience : null;</span>
+
+<span class="fc" id="L49">        return jobRepository.searchJobs(titleParam, locationParam, type, experienceParam).stream().map(jobMapper::toResponse).toList();</span>
+    }
+
+    public List&lt;JobResponse&gt; getJobsByRecruiter(Long recruiterId) {
+<span class="nc" id="L53">        return jobRepository.findByPostedByAndIsActiveTrueOrderByCreatedAtDesc(recruiterId).stream().map(jobMapper::toResponse).toList();</span>
+    }
+
+    public List&lt;JobResponse&gt; getAllJobsForAdmin() {
+<span class="fc" id="L57">        return jobRepository.findAll().stream().map(jobMapper::toResponse).toList();</span>
+    }
+
+    public long getTotalActiveJobs() {
+<span class="fc" id="L61">        return jobRepository.countByIsActiveTrue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

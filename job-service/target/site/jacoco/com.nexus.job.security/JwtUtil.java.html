@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">job-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.job.security</a> &gt; <span class="el_source">JwtUtil.java</span></div><h1>JwtUtil.java</h1><pre class="source lang-java linenums">package com.nexus.job.security;
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
+
+/**
+ * JWT utility for Job Service - validates tokens issued by Auth Service.
+ */
+@Component
+<span class="fc" id="L18">public class JwtUtil {</span>
+<span class="fc" id="L19">    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);</span>
+
+    @Value(&quot;${jwt.secret}&quot;)
+    private String secret;
+
+    public String extractUsername(String token) {
+<span class="nc" id="L25">        return extractClaims(token).getSubject();</span>
+    }
+
+    public String extractRole(String token) {
+<span class="nc" id="L29">        return (String) extractClaims(token).get(&quot;role&quot;);</span>
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+<span class="nc" id="L34">            Claims claims = extractClaims(token);</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">            return !claims.getExpiration().before(new Date());</span>
+<span class="nc" id="L36">        } catch (JwtException | IllegalArgumentException e) {</span>
+<span class="nc" id="L37">            log.error(&quot;Invalid JWT token: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L38">            return false;</span>
+        }
+    }
+
+    private Claims extractClaims(String token) {
+<span class="nc" id="L43">        return Jwts.parserBuilder()</span>
+<span class="nc" id="L44">                .setSigningKey(getSignInKey())</span>
+<span class="nc" id="L45">                .build()</span>
+<span class="nc" id="L46">                .parseClaimsJws(token)</span>
+<span class="nc" id="L47">                .getBody();</span>
+    }
+
+    private Key getSignInKey() {
+<span class="nc" id="L51">        byte[] keyBytes = Base64.getEncoder().encode(secret.getBytes());</span>
+<span class="nc" id="L52">        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(keyBytes));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

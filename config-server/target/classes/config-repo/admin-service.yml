@@ -1,0 +1,33 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: admin-service
+
+jwt:
+  secret: nexus-careers-jwt-secret-key-2024-very-long-secret-for-hs256-algorithm-minimum-256-bits
+  expiration: 86400000
+
+# Fix: use Docker service names instead of localhost
+services:
+  auth-url: http://auth-service:8081
+  job-url: http://job-service:8082
+  application-url: http://application-service:8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    com.nexus: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

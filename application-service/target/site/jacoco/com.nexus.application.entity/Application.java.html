@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Application.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">application-service</a> &gt; <a href="index.source.html" class="el_package">com.nexus.application.entity</a> &gt; <span class="el_source">Application.java</span></div><h1>Application.java</h1><pre class="source lang-java linenums">package com.nexus.application.entity;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+/**
+ * Application entity — represents a job seeker's application for a job.
+ * Unique constraint prevents duplicate applications per user per job.
+ */
+@Entity
+@Table(
+    name = &quot;applications&quot;,
+    uniqueConstraints = @UniqueConstraint(
+        name = &quot;uk_user_job&quot;,
+        columnNames = {&quot;user_id&quot;, &quot;job_id&quot;}
+    )
+)
+public class Application {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;user_id&quot;, nullable = false)
+    private Long userId;
+
+    @Column(name = &quot;job_id&quot;, nullable = false)
+    private Long jobId;
+
+    // Denormalized fields for quick display without cross-service calls
+    @Column(name = &quot;applicant_name&quot;)
+    private String applicantName;
+
+    @Column(name = &quot;applicant_email&quot;)
+    private String applicantEmail;
+
+    @Column(name = &quot;job_title&quot;)
+    private String jobTitle;
+
+    @Column(name = &quot;company_name&quot;)
+    private String companyName;
+
+    @Column(name = &quot;resume_url&quot;)
+    private String resumeUrl;
+
+    @Column(name = &quot;cover_letter&quot;, columnDefinition = &quot;TEXT&quot;)
+    private String coverLetter;
+
+<span class="fc" id="L52">    @Enumerated(EnumType.STRING)</span>
+    @Column(nullable = false)
+    private ApplicationStatus status = ApplicationStatus.APPLIED;
+
+    @Column(name = &quot;recruiter_notes&quot;)
+    private String recruiterNotes;
+
+    @CreationTimestamp
+    @Column(name = &quot;applied_at&quot;, updatable = false)
+    private LocalDateTime appliedAt;
+
+    @UpdateTimestamp
+    @Column(name = &quot;updated_at&quot;)
+    private LocalDateTime updatedAt;
+
+<span class="fc" id="L67">    public Application() {}</span>
+
+<span class="fc" id="L69">    public Application(Long id, Long userId, Long jobId, String applicantName, String applicantEmail, String jobTitle, String companyName, String resumeUrl, String coverLetter, ApplicationStatus status, String recruiterNotes, LocalDateTime appliedAt, LocalDateTime updatedAt) {</span>
+<span class="fc" id="L70">        this.id = id;</span>
+<span class="fc" id="L71">        this.userId = userId;</span>
+<span class="fc" id="L72">        this.jobId = jobId;</span>
+<span class="fc" id="L73">        this.applicantName = applicantName;</span>
+<span class="fc" id="L74">        this.applicantEmail = applicantEmail;</span>
+<span class="fc" id="L75">        this.jobTitle = jobTitle;</span>
+<span class="fc" id="L76">        this.companyName = companyName;</span>
+<span class="fc" id="L77">        this.resumeUrl = resumeUrl;</span>
+<span class="fc" id="L78">        this.coverLetter = coverLetter;</span>
+<span class="fc" id="L79">        this.status = status;</span>
+<span class="fc" id="L80">        this.recruiterNotes = recruiterNotes;</span>
+<span class="fc" id="L81">        this.appliedAt = appliedAt;</span>
+<span class="fc" id="L82">        this.updatedAt = updatedAt;</span>
+<span class="fc" id="L83">    }</span>
+
+    // Getters and Setters
+<span class="fc" id="L86">    public Long getId() { return id; }</span>
+<span class="nc" id="L87">    public void setId(Long id) { this.id = id; }</span>
+<span class="fc" id="L88">    public Long getUserId() { return userId; }</span>
+<span class="fc" id="L89">    public void setUserId(Long userId) { this.userId = userId; }</span>
+<span class="fc" id="L90">    public Long getJobId() { return jobId; }</span>
+<span class="nc" id="L91">    public void setJobId(Long jobId) { this.jobId = jobId; }</span>
+<span class="fc" id="L92">    public String getApplicantName() { return applicantName; }</span>
+<span class="nc" id="L93">    public void setApplicantName(String applicantName) { this.applicantName = applicantName; }</span>
+<span class="fc" id="L94">    public String getApplicantEmail() { return applicantEmail; }</span>
+<span class="nc" id="L95">    public void setApplicantEmail(String applicantEmail) { this.applicantEmail = applicantEmail; }</span>
+<span class="fc" id="L96">    public String getJobTitle() { return jobTitle; }</span>
+<span class="nc" id="L97">    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }</span>
+<span class="fc" id="L98">    public String getCompanyName() { return companyName; }</span>
+<span class="nc" id="L99">    public void setCompanyName(String companyName) { this.companyName = companyName; }</span>
+<span class="fc" id="L100">    public String getResumeUrl() { return resumeUrl; }</span>
+<span class="nc" id="L101">    public void setResumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; }</span>
+<span class="fc" id="L102">    public String getCoverLetter() { return coverLetter; }</span>
+<span class="nc" id="L103">    public void setCoverLetter(String coverLetter) { this.coverLetter = coverLetter; }</span>
+<span class="fc" id="L104">    public ApplicationStatus getStatus() { return status; }</span>
+<span class="fc" id="L105">    public void setStatus(ApplicationStatus status) { this.status = status; }</span>
+<span class="fc" id="L106">    public String getRecruiterNotes() { return recruiterNotes; }</span>
+<span class="fc" id="L107">    public void setRecruiterNotes(String recruiterNotes) { this.recruiterNotes = recruiterNotes; }</span>
+<span class="fc" id="L108">    public LocalDateTime getAppliedAt() { return appliedAt; }</span>
+<span class="nc" id="L109">    public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }</span>
+<span class="fc" id="L110">    public LocalDateTime getUpdatedAt() { return updatedAt; }</span>
+<span class="nc" id="L111">    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }</span>
+
+    public static ApplicationBuilder builder() {
+<span class="fc" id="L114">        return new ApplicationBuilder();</span>
+    }
+
+<span class="fc" id="L117">    public static class ApplicationBuilder {</span>
+        private Long id;
+        private Long userId;
+        private Long jobId;
+        private String applicantName;
+        private String applicantEmail;
+        private String jobTitle;
+        private String companyName;
+        private String resumeUrl;
+        private String coverLetter;
+<span class="fc" id="L127">        private ApplicationStatus status = ApplicationStatus.APPLIED;</span>
+        private String recruiterNotes;
+        private LocalDateTime appliedAt;
+        private LocalDateTime updatedAt;
+
+<span class="nc" id="L132">        public ApplicationBuilder id(Long id) { this.id = id; return this; }</span>
+<span class="fc" id="L133">        public ApplicationBuilder userId(Long userId) { this.userId = userId; return this; }</span>
+<span class="fc" id="L134">        public ApplicationBuilder jobId(Long jobId) { this.jobId = jobId; return this; }</span>
+<span class="fc" id="L135">        public ApplicationBuilder applicantName(String applicantName) { this.applicantName = applicantName; return this; }</span>
+<span class="fc" id="L136">        public ApplicationBuilder applicantEmail(String applicantEmail) { this.applicantEmail = applicantEmail; return this; }</span>
+<span class="fc" id="L137">        public ApplicationBuilder jobTitle(String jobTitle) { this.jobTitle = jobTitle; return this; }</span>
+<span class="fc" id="L138">        public ApplicationBuilder companyName(String companyName) { this.companyName = companyName; return this; }</span>
+<span class="fc" id="L139">        public ApplicationBuilder resumeUrl(String resumeUrl) { this.resumeUrl = resumeUrl; return this; }</span>
+<span class="fc" id="L140">        public ApplicationBuilder coverLetter(String coverLetter) { this.coverLetter = coverLetter; return this; }</span>
+<span class="fc" id="L141">        public ApplicationBuilder status(ApplicationStatus status) { this.status = status; return this; }</span>
+<span class="nc" id="L142">        public ApplicationBuilder recruiterNotes(String recruiterNotes) { this.recruiterNotes = recruiterNotes; return this; }</span>
+<span class="nc" id="L143">        public ApplicationBuilder appliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; return this; }</span>
+<span class="nc" id="L144">        public ApplicationBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }</span>
+
+        public Application build() {
+<span class="fc" id="L147">            return new Application(id, userId, jobId, applicantName, applicantEmail, jobTitle, companyName, resumeUrl, coverLetter, status, recruiterNotes, appliedAt, updatedAt);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

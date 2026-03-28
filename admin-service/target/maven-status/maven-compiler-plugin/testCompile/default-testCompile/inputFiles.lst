@@ -1,0 +1,6 @@
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/AdminServiceApplicationTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/config/RestTemplateConfigTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/service/AdminServiceTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/security/JwtAuthenticationFilterTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/security/JwtUtilTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/admin-service/src/test/java/com/nexus/admin/controller/AdminControllerTest.java

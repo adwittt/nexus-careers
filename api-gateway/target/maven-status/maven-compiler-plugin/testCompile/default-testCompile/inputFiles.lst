@@ -1,0 +1,3 @@
+/Users/adwitgupta/Desktop/nexus-careers-complete/api-gateway/src/test/java/com/nexus/gateway/config/GatewayCorsConfigTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/api-gateway/src/test/java/com/nexus/gateway/filter/JwtAuthenticationFilterTest.java
+/Users/adwitgupta/Desktop/nexus-careers-complete/api-gateway/src/test/java/com/nexus/gateway/security/JwtUtilTest.java

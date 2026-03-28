@@ -1,0 +1,4 @@
+com/nexus/application/exception/GlobalExceptionHandlerTest.class
+com/nexus/application/service/ApplicationMessageProducerTest.class
+com/nexus/application/controller/ApplicationControllerTest.class
+com/nexus/application/service/ApplicationServiceTest.class

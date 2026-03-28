@@ -1,0 +1,80 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # ── Route definitions ──────────────────────────────────────────────
+      routes:
+        # Auth Service
+        - id: auth-service
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+
+        # Job Service
+        - id: job-service
+          uri: http://job-service:8082
+          predicates:
+            - Path=/api/jobs/**
+
+        # Application Service
+        - id: application-service
+          uri: http://application-service:8083
+          predicates:
+            - Path=/api/applications/**
+
+        # Admin Service
+        - id: admin-service
+          uri: http://admin-service:8084
+          predicates:
+            - Path=/api/admin/**
+
+      # ── Global CORS ───────────────────────────────────────────────────
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # Default filters apply to all routes
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+# JWT — shared secret with all microservices
+jwt:
+  secret: nexus-careers-jwt-secret-key-2024-very-long-secret-for-hs256-algorithm-minimum-256-bits
+  expiration: 86400000
+
+logging:
+  level:
+    com.nexus: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    urls:
+      - name: Auth Service
+        url: /api/auth/v3/api-docs
+      - name: Job Service
+        url: /api/jobs/v3/api-docs
+      - name: Application Service
+        url: /api/applications/v3/api-docs
+      - name: Admin Service
+        url: /api/admin/v3/api-docs
