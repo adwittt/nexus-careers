@@ -45,7 +45,6 @@ public class JwtUtil {
         extraClaims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
         if (userDetails instanceof com.nexus.auth.entity.User user) {
             extraClaims.put("userId", String.valueOf(user.getId()));
-            // FIX: include name claim so API Gateway can forward real name, not email
             extraClaims.put("name", user.getName() != null ? user.getName() : user.getUsername());
         }
         return generateToken(extraClaims, userDetails);

@@ -14,7 +14,6 @@ public class JobDtos {
         // Utility class
     }
 
-    // ---- Request DTOs ----
 
     public static class CreateJobRequest {
         @NotBlank(message = "Title is required")
@@ -32,7 +31,6 @@ public class JobDtos {
         private List<String> requiredSkills;
         private JobType jobType;
 
-        // Getters and Setters
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
         public String getCompanyName() { return companyName; }
@@ -61,7 +59,6 @@ public class JobDtos {
         private List<String> requiredSkills;
         private JobType jobType;
 
-        // Getters and Setters
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
         public String getCompanyName() { return companyName; }
@@ -80,7 +77,6 @@ public class JobDtos {
         public void setJobType(JobType jobType) { this.jobType = jobType; }
     }
 
-    // ---- Response DTOs ----
 
     public static class JobResponse implements Serializable {
         private Long id;
@@ -98,7 +94,6 @@ public class JobDtos {
         private String createdAt;
         private String updatedAt;
 
-        // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
         public String getTitle() { return title; }

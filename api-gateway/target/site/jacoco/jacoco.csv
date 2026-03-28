@@ -1,5 +1,0 @@
-GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-api-gateway,com.nexus.gateway.filter,JwtAuthenticationFilter,7,280,10,22,2,48,11,12,1,6
-api-gateway,com.nexus.gateway.security,JwtUtil,3,86,3,3,0,20,3,9,0,9
-api-gateway,com.nexus.gateway.config,GatewayCorsConfig,0,46,0,0,0,10,0,2,0,2
-api-gateway,com.nexus.gateway,ApiGatewayApplication,8,0,0,0,3,0,2,0,2,0

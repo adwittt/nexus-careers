@@ -92,7 +92,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String email  = jwtUtil.extractUsername(token);
         String role   = jwtUtil.extractRole(token);
         String userId = jwtUtil.extractUserId(token);
-        // FIX: extract real display name instead of forwarding email as name
         String name   = jwtUtil.extractName(token);
         if (name == null || name.isBlank()) {
             name = email; // fallback to email if name claim absent (old tokens)

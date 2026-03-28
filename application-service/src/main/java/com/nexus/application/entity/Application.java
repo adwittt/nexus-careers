@@ -30,7 +30,6 @@ public class Application {
     @Column(name = "job_id", nullable = false)
     private Long jobId;
 
-    // Denormalized fields for quick display without cross-service calls
     @Column(name = "applicant_name")
     private String applicantName;
 
@@ -82,7 +81,6 @@ public class Application {
         this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getUserId() { return userId; }

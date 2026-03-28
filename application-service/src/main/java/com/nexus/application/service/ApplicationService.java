@@ -48,7 +48,6 @@ public class ApplicationService {
             String applicantName,
             String applicantEmail) {
 
-        // Validate job exists via Feign Client
         JobDto jobDto = null;
         try {
             jobDto = jobServiceClient.getJobById(request.getJobId());
@@ -60,7 +59,6 @@ public class ApplicationService {
             throw new IllegalStateException("Job is no longer active or does not exist");
         }
 
-        // Enforce: one application per job per user
         if (applicationRepository.existsByUserIdAndJobId(userId, request.getJobId())) {
             throw new DuplicateApplicationException(
                     "You have already applied for this job. Track your application in your dashboard.");
@@ -81,7 +79,6 @@ public class ApplicationService {
         Application saved = applicationRepository.save(application);
         log.info("Application submitted: userId={} for jobId={}", userId, request.getJobId());
         
-        // Publish to RabbitMQ
         String msg = String.format("New application submitted for Job '%s' by '%s' (Email: %s)", jobDto.getTitle(), applicantName, applicantEmail);
         messageProducer.sendApplicationEvent(msg);
         
@@ -178,7 +175,6 @@ public class ApplicationService {
         return new ApiResponse(true, "Application withdrawn successfully");
     }
 
-    // ---- Private helpers ----
 
     /**
      * Enforce valid status transitions:

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     public void sendPasswordResetEmail(String to, String resetLink) {
-        // In a real application, use JavaMailSender to send an actual email.
         log.info("==================================================");
         log.info("Mock Email Sent to: {}", to);
         log.info("Subject: Password Reset Request");

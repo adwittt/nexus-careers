@@ -137,7 +137,6 @@ public class AdminService {
         }
     }
 
-    // ---- Helper ----
 
     private HttpHeaders buildHeaders(String bearerToken) {
         HttpHeaders headers = new HttpHeaders();

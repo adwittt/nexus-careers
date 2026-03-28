@@ -37,7 +37,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Gateway-injected headers (primary path)
         String userEmail = request.getHeader("X-User-Email");
         String userRole  = request.getHeader("X-User-Role");
 
@@ -52,7 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Direct call fallback — validate JWT ourselves
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);

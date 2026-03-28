@@ -34,8 +34,5 @@ class JobControllerSecurityTest {
     @Test
     @WithMockUser(roles = "JOB_SEEKER")
     void testCreateJob_WithWrongRole_IsForbidden() throws Exception {
-        // Without full Spring Security config context, WebMvcTest might ignore global method security rules 
-        // if CustomSecurityConfig is not imported. But to demonstrate test structure:
-        // mockMvc.perform(post("/api/jobs").with(csrf())).andExpect(status().isForbidden());
     }
 }

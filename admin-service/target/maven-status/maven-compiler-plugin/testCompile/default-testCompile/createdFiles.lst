@@ -1,6 +1,0 @@
-com/nexus/admin/config/RestTemplateConfigTest.class
-com/nexus/admin/service/AdminServiceTest.class
-com/nexus/admin/AdminServiceApplicationTest.class
-com/nexus/admin/security/JwtUtilTest.class
-com/nexus/admin/security/JwtAuthenticationFilterTest.class
-com/nexus/admin/controller/AdminControllerTest.class

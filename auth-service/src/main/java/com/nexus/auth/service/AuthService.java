@@ -129,7 +129,6 @@ public class AuthService {
         
         if (user == null) {
             log.warn("Password reset requested for non-existent email: {}", request.getEmail());
-            // Security best practice: don't reveal if user exists, but for this dev stage we want clear feedback
             return new ApiResponse(false, "User not found with email: " + request.getEmail());
         }
 

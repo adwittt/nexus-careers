@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Size;
  */
 public class AuthDtos {
 
-    // ---- Request DTOs ----
 
     public static class RegisterRequest {
         @NotBlank(message = "Name is required")
@@ -30,7 +29,6 @@ public class AuthDtos {
 
         private String phone;
 
-        // Getters and Setters
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getEmail() { return email; }
@@ -51,7 +49,6 @@ public class AuthDtos {
         @NotBlank(message = "Password is required")
         private String password;
 
-        // Getters and Setters
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getPassword() { return password; }
@@ -81,7 +78,6 @@ public class AuthDtos {
         public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
     }
 
-    // ---- Response DTOs ----
 
     public static class AuthResponse {
         private String accessToken;

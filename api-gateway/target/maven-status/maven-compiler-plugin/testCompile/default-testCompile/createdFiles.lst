@@ -1,3 +1,0 @@
-com/nexus/gateway/config/GatewayCorsConfigTest.class
-com/nexus/gateway/security/JwtUtilTest.class
-com/nexus/gateway/filter/JwtAuthenticationFilterTest.class

@@ -59,7 +59,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(500, "Internal server error"));
     }
 
-    // ---- Error response models ----
 
     public record ErrorResponse(int status, String message, LocalDateTime timestamp) {
         public ErrorResponse(int status, String message) {

@@ -65,7 +65,6 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
                 .requestMatchers(
                     "/api/auth/register",
                     "/api/auth/login",
@@ -76,7 +75,6 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/actuator/**"
                 ).permitAll()
-                // Admin only
                 .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
                 // All other requests need authentication
                 .anyRequest().authenticated()

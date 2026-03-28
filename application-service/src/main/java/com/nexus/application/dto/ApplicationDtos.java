@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
  */
 public class ApplicationDtos {
 
-    // ---- Request DTOs ----
 
     public static class ApplyRequest {
         @NotNull(message = "Job ID is required")
@@ -46,7 +45,6 @@ public class ApplicationDtos {
         public void setRecruiterNotes(String recruiterNotes) { this.recruiterNotes = recruiterNotes; }
     }
 
-    // ---- Response DTOs ----
 
     public static class ApplicationResponse {
         private Long id;

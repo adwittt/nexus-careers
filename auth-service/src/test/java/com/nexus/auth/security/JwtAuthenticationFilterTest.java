@@ -28,7 +28,6 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        // Clear security context
         org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
 

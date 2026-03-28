@@ -1,0 +1,20 @@
+### Build/Target Folders ###
+target/
+node_modules/
+dist/
+build/
+
+### IDE/Editor Files ###
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+### Log Files & Env ###
+*.log
+.env
+.DS_Store
+
+### Uploads/Temp ###
+uploads/

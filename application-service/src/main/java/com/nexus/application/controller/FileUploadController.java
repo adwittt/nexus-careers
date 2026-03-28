@@ -39,7 +39,6 @@ public class FileUploadController {
         }
 
         try {
-            // Upload file to Cloudinary
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), 
                     ObjectUtils.asMap(
                         "resource_type", "auto",
@@ -56,5 +55,4 @@ public class FileUploadController {
         }
     }
 
-    // Note: /download endpoint is no longer needed as Cloudinary provides direct CDN URLs.
 }

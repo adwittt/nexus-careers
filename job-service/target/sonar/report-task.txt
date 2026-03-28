@@ -1,6 +1,0 @@
-projectKey=nexus-job
-serverUrl=http://localhost:9000
-serverVersion=10.7.0.96327
-dashboardUrl=http://localhost:9000/dashboard?id=nexus-job
-ceTaskId=7b3836e2-8c68-4107-aed4-7f90ed4a455f
-ceTaskUrl=http://localhost:9000/api/ce/task?id=7b3836e2-8c68-4107-aed4-7f90ed4a455f

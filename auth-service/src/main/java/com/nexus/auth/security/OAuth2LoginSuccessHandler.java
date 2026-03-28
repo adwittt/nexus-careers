@@ -36,7 +36,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
         
-        // For LinkedIn, the name might be split into localizedFirstName and localizedLastName
         if (name == null) {
             String firstName = oAuth2User.getAttribute("localizedFirstName");
             String lastName = oAuth2User.getAttribute("localizedLastName");
@@ -56,7 +55,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         if (userOptional.isPresent()) {
             user = userOptional.get();
         } else {
-            // Determine provider
             AuthProvider provider = request.getRequestURI().contains("google") ? AuthProvider.GOOGLE : AuthProvider.LINKEDIN;
             
             user = User.builder()

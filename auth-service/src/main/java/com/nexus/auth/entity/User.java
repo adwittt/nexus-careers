@@ -56,7 +56,6 @@ public class User implements UserDetails {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // Constructors
     public User() {}
 
     public User(Long id, String name, String email, String password, AuthProvider authProvider, 
@@ -73,7 +72,6 @@ public class User implements UserDetails {
         this.createdAt = createdAt;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -116,7 +114,6 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() { return isActive; }
 
-    // Manual Builder
     public static UserBuilder builder() {
         return new UserBuilder();
     }

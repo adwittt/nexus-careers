@@ -20,7 +20,6 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-    // Constructors
     public PasswordResetToken() {}
 
     public PasswordResetToken(Long id, String token, User user, LocalDateTime expiryDate) {
@@ -30,7 +29,6 @@ public class PasswordResetToken {
         this.expiryDate = expiryDate;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getToken() { return token; }
@@ -40,7 +38,6 @@ public class PasswordResetToken {
     public LocalDateTime getExpiryDate() { return expiryDate; }
     public void setExpiryDate(LocalDateTime expiryDate) { this.expiryDate = expiryDate; }
 
-    // Manual Builder
     public static PasswordResetTokenBuilder builder() {
         return new PasswordResetTokenBuilder();
     }

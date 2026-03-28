@@ -88,7 +88,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.getUserById(userId));
     }
 
-    // ---- Admin Endpoints ----
 
     /**
      * Get all users (Admin only).

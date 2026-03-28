@@ -66,7 +66,6 @@ public class Job implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Constructors
     public Job() {}
 
     public Job(Long id, String title, String companyName, String location, String salary, String experience, 
@@ -88,7 +87,6 @@ public class Job implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
@@ -118,7 +116,6 @@ public class Job implements Serializable {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    // Manual Builder
     public static JobBuilder builder() {
         return new JobBuilder();
     }
