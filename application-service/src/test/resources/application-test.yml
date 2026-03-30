@@ -18,3 +18,8 @@ eureka:
 
 jwt:
   secret: testsecrettestsecrettestsecrettestsecrettestsecrettestsecrettestsecret
+
+cloudinary:
+  cloud-name: mockCloudName
+  api-key: mockApiKey
+  api-secret: mockApiSecret

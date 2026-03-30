@@ -52,7 +52,7 @@ class ApplicationControllerTest {
     @Test
     void getMyApps_Success() throws Exception {
         when(applicationService.getUserApplications(100L)).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/api/applications/my").header("X-User-Id", 100L))
+        mockMvc.perform(get("/api/applications/user").header("X-User-Id", 100L))
                 .andExpect(status().isOk());
     }
 

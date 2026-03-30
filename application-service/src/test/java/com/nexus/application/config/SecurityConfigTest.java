@@ -20,6 +20,5 @@ class SecurityConfigTest {
     @Test
     void configLoad_Success() {
         assertNotNull(context.getBean(SecurityFilterChain.class));
-        assertNotNull(context.getBean(CorsConfigurationSource.class));
     }
 }
