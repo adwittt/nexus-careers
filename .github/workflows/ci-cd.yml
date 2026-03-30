@@ -44,7 +44,7 @@ jobs:
           npm install
           npm run build
 
-  # 3. Overall Stack Deployment (THE MAGIC STEP)
+  # 3. Overall Stack Deployment (THE MAGIC STEP))))))))
   deploy-to-local:
     name: Deploy to Local Docker
     needs: [java-build, frontend-build]
