@@ -57,5 +57,5 @@ jobs:
       - name: Start Full Stack in Docker Desktop
         run: |
           echo "Starting the deployment on Adwit's Mac..."
-          docker compose down
-          docker compose up -d --build
+          docker compose -p nexus-careers-complete down
+          docker compose -p nexus-careers-complete up -d --build
