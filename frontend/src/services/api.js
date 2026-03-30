@@ -27,7 +27,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect to login on 401 if it's NOT an auth-related request
+    const isAuthRequest = error.config?.url?.includes('/api/auth/')
+    
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('nexus_token')
       localStorage.removeItem('nexus_user')
       window.location.href = '/login'
@@ -42,6 +45,8 @@ api.interceptors.response.use(
 
 export const register = (data) => api.post('/api/auth/register', data)
 export const login = (data) => api.post('/api/auth/login', data)
+export const verifyOtp = (data) => api.post('/api/auth/verify-otp', data)
+export const sendOtp = (data) => api.post('/api/auth/send-otp', data)
 export const forgotPassword = (data) => api.post('/api/auth/forgot-password', data)
 export const resetPassword = (data) => api.post('/api/auth/reset-password', data)
 export const getUserProfile = (userId) =>

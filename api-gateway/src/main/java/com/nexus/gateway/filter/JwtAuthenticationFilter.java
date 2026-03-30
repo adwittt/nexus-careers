@@ -40,7 +40,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         "/api/auth/login",
         "/api/auth/validate",
         "/api/auth/forgot-password",
-        "/api/auth/reset-password"
+        "/api/auth/reset-password",
+        "/api/auth/verify-otp",
+        "/api/auth/send-otp"
     );
 
     /** GET-only public paths (job browsing without login) */
@@ -77,7 +79,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.debug("Missing or invalid Authorization header for path: {}", path);
-            return onUnauthorized(exchange, "Missing Authorization header");
+            return onUnauthorized(exchange, "Missing Authorization header (GATEWAY FIX TEST)");
         }
 
         String token = authHeader.substring(7);

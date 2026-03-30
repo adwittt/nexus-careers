@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Briefcase } from 'lucide-react'
 import { register } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import VerifyOtpModal from '../components/VerifyOtpModal'
+import Field from '../components/Field'
 
 /**
  * Registration page — matches Image 6 (left panel) mockup:
@@ -17,6 +19,8 @@ export default function RegisterPage() {
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
+  const [showOtp, setShowOtp]         = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   const { loginUser } = useAuth()
   const navigate = useNavigate()
@@ -44,11 +48,9 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const payload = { name: form.name, email: form.email, password: form.password, role: form.role, phone: form.phone }
-      const res = await register(payload)
-      const { accessToken, ...userData } = res.data
-      loginUser(userData, accessToken)
-      const dest = form.role === 'JOB_SEEKER' ? '/dashboard/seeker' : '/dashboard/recruiter'
-      navigate(dest, { replace: true })
+      await register(payload)
+      setRegisteredEmail(form.email)
+      setShowOtp(true)
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.')
     } finally {
@@ -56,34 +58,21 @@ export default function RegisterPage() {
     }
   }
 
-  const Field = ({ label, name, type = 'text', placeholder, right }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <div className="relative">
-        <input
-          name={name}
-          type={type}
-          value={form[name]}
-          onChange={handleChange}
-          placeholder={placeholder || label}
-          className={`input-field ${right ? 'pr-10' : ''} ${fieldErrors[name] ? 'border-red-400' : ''}`}
-        />
-        {right && (
-          <button type="button" onClick={right}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-transparent border-0 cursor-pointer p-0">
-            {name === 'password'
-              ? (showPass ? <EyeOff size={16}/> : <Eye size={16}/>)
-              : (showConfirm ? <EyeOff size={16}/> : <Eye size={16}/>)
-            }
-          </button>
-        )}
-      </div>
-      {fieldErrors[name] && <p className="text-red-500 text-xs mt-1">{fieldErrors[name]}</p>}
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      {showOtp && (
+        <VerifyOtpModal
+          email={registeredEmail}
+          onClose={() => setShowOtp(false)}
+          onSuccess={(data) => {
+            const { accessToken, ...userData } = data
+            loginUser(userData, accessToken)
+            const dest = userData.role === 'JOB_SEEKER' ? '/dashboard/seeker' : '/dashboard/recruiter'
+            navigate(dest, { replace: true })
+          }}
+        />
+      )}
+
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
 
         {/* Logo */}
@@ -102,11 +91,11 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <Field label="Full Name"        name="name"            placeholder="Full Name" />
-          <Field label="Email Address"    name="email"           type="email" placeholder="Email Address" />
-          <Field label="Password"         name="password"        type={showPass    ? 'text' : 'password'} placeholder="Password"         right={() => setShowPass(p => !p)} />
-          <Field label="Confirm Password" name="confirmPassword" type={showConfirm ? 'text' : 'password'} placeholder="Confirm Password" right={() => setShowConfirm(p => !p)} />
-          <Field label="Phone Number"     name="phone"           type="tel" placeholder="Phone Number" />
+          <Field label="Full Name"        name="name"            placeholder="Full Name"        value={form.name}            onChange={handleChange} error={fieldErrors.name} />
+          <Field label="Email Address"    name="email"           placeholder="Email Address"    value={form.email}           onChange={handleChange} error={fieldErrors.email}           type="email" />
+          <Field label="Password"         name="password"        placeholder="Password"         value={form.password}        onChange={handleChange} error={fieldErrors.password}        type={showPass    ? 'text' : 'password'} right={() => setShowPass(p => !p)}    rightIcon={showPass    ? <EyeOff size={16}/> : <Eye size={16}/>} />
+          <Field label="Confirm Password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} error={fieldErrors.confirmPassword} type={showConfirm ? 'text' : 'password'} right={() => setShowConfirm(p => !p)} rightIcon={showConfirm ? <EyeOff size={16}/> : <Eye size={16}/>} />
+          <Field label="Phone Number"     name="phone"           placeholder="Phone Number"     value={form.phone}           onChange={handleChange} error={fieldErrors.phone}           type="tel" />
 
           {/* Role toggle — "Job Seeker | Recruiter" like mockup */}
           <div>

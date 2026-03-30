@@ -40,7 +40,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public: anyone can view jobs
                 .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**", "/api/jobs/search").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/**").permitAll()
+                .requestMatchers("/api/jobs/v3/api-docs", "/api/jobs/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/**").permitAll()
                 // Only recruiters can post jobs
                 .requestMatchers(HttpMethod.POST, "/api/jobs").hasRole(ROLE_RECRUITER)
                 .requestMatchers(HttpMethod.PUT, JOBS_API_PATH).hasRole(ROLE_RECRUITER)

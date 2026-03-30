@@ -31,6 +31,8 @@ class ApplicationServiceTest {
     private JobServiceClient jobServiceClient;
     @Mock
     private ApplicationMessageProducer messageProducer;
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private ApplicationService applicationService;

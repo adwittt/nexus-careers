@@ -4,10 +4,11 @@ import com.nexus.auth.dto.AuthDtos.*;
 import com.nexus.auth.entity.PasswordResetToken;
 import com.nexus.auth.entity.User;
 import com.nexus.auth.entity.Role;
-import com.nexus.auth.exception.ResourceAlreadyExistsException;
 import com.nexus.auth.repository.PasswordResetTokenRepository;
 import com.nexus.auth.repository.UserRepository;
 import com.nexus.auth.security.JwtUtil;
+import com.nexus.auth.exception.ResourceAlreadyExistsException;
+import com.nexus.auth.exception.InvalidOtpException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,7 @@ class AuthServiceTest {
                 .password("encoded_pass")
                 .role(Role.JOB_SEEKER)
                 .isActive(true)
+                .emailVerified(true)
                 .build();
     }
 
@@ -58,18 +60,17 @@ class AuthServiceTest {
         RegisterRequest req = new RegisterRequest();
         req.setName("Test User");
         req.setEmail("test@example.com");
-        req.setPassword("pass123");
+        req.setPassword("pass12345");
         req.setRole(Role.JOB_SEEKER);
 
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenReturn(mockUser);
-        when(jwtUtil.generateToken(any(User.class))).thenReturn("mock-token");
 
         AuthResponse res = authService.register(req);
 
         assertNotNull(res);
-        assertEquals("mock-token", res.getAccessToken());
+        assertNull(res.getAccessToken());
         verify(userRepository).save(any(User.class));
     }
 
@@ -186,5 +187,67 @@ class AuthServiceTest {
         when(tokenRepository.findByToken("token-expired")).thenReturn(Optional.of(tokenEntity));
 
         assertThrows(RuntimeException.class, () -> authService.resetPassword(req));
+    }
+
+    @Test
+    void verifyOtp_Success() {
+        VerifyOtpRequest req = new VerifyOtpRequest();
+        req.setEmail("test@example.com");
+        req.setOtp("123456");
+
+        mockUser.setOtp("123456");
+        mockUser.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+        when(jwtUtil.generateToken(mockUser)).thenReturn("token");
+
+        AuthResponse res = authService.verifyOtp(req);
+
+        assertNotNull(res);
+        assertTrue(mockUser.isEmailVerified());
+        assertNull(mockUser.getOtp());
+        verify(emailService).sendWelcomeEmail(anyString(), anyString());
+    }
+
+    @Test
+    void verifyOtp_Invalid() {
+        VerifyOtpRequest req = new VerifyOtpRequest();
+        req.setEmail("test@example.com");
+        req.setOtp("wrong");
+
+        mockUser.setOtp("123456");
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+
+        assertThrows(InvalidOtpException.class, () -> authService.verifyOtp(req));
+    }
+
+    @Test
+    void verifyOtp_Expired() {
+        VerifyOtpRequest req = new VerifyOtpRequest();
+        req.setEmail("test@example.com");
+        req.setOtp("123456");
+
+        mockUser.setOtp("123456");
+        mockUser.setOtpExpiry(LocalDateTime.now().minusMinutes(5));
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+
+        assertThrows(InvalidOtpException.class, () -> authService.verifyOtp(req));
+    }
+
+    @Test
+    void sendOtp_Success() {
+        SendOtpRequest req = new SendOtpRequest();
+        req.setEmail("test@example.com");
+
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUser));
+
+        ApiResponse res = authService.sendOtp(req);
+
+        assertTrue(res.isSuccess());
+        assertNotNull(mockUser.getOtp());
+        assertNotNull(mockUser.getOtpExpiry());
+        verify(emailService).sendVerificationEmail(eq("test@example.com"), anyString());
     }
 }

@@ -20,6 +20,20 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: adwitkumar86@gmail.com
+    password: jpvhuqicmwxjhmvp
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: nexus-careers-jwt-secret-key-2024-very-long-secret-for-hs256-algorithm-minimum-256-bits
   expiration: 86400000
@@ -30,7 +44,7 @@ logging:
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /api/applications/v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
 

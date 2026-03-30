@@ -35,6 +35,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    private static final String ACTUATOR_PATH = "/actuator/**";
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
@@ -53,7 +54,7 @@ public class SecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/actuator/**")
+            .securityMatcher(ACTUATOR_PATH)
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .csrf(AbstractHttpConfigurer::disable);
         return http.build();
@@ -68,12 +69,14 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/register",
                     "/api/auth/login",
+                    "/api/auth/verify-otp",
+                    "/api/auth/send-otp",
                     "/api/auth/forgot-password",
                     "/api/auth/reset-password",
-                    "/v3/api-docs/**",
+                    "/api/auth/v3/api-docs", "/api/auth/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
-                    "/actuator/**"
+                    ACTUATOR_PATH
                 ).permitAll()
                 .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
                 // All other requests need authentication
@@ -93,7 +96,7 @@ public class SecurityConfig {
     
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/actuator/**");
+        return web -> web.ignoring().requestMatchers(ACTUATOR_PATH);
     }
 
     @Bean

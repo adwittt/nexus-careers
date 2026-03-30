@@ -7,6 +7,7 @@ import com.nexus.auth.exception.ResourceAlreadyExistsException;
 import com.nexus.auth.repository.PasswordResetTokenRepository;
 import com.nexus.auth.repository.UserRepository;
 import com.nexus.auth.security.JwtUtil;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.nexus.auth.exception.InvalidOtpException;
+import com.nexus.auth.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+    private static final String USER_NOT_FOUND_EMAIL = "User not found with email: ";
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -58,6 +63,8 @@ public class AuthService {
             throw new ResourceAlreadyExistsException("Email already registered: " + request.getEmail());
         }
 
+        String otp = String.format("%06d", secureRandom.nextInt(999999));
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -65,12 +72,18 @@ public class AuthService {
                 .role(request.getRole())
                 .phone(request.getPhone())
                 .build();
+        
+        user.setEmailVerified(false);
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
 
         User saved = userRepository.save(user);
         log.info("New user registered: {} [{}]", saved.getEmail(), saved.getRole());
 
-        String accessToken = jwtUtil.generateToken(saved);
-        return new AuthResponse(accessToken, saved.getId(), saved.getName(), saved.getEmail(), saved.getRole().name());
+        emailService.sendVerificationEmail(saved.getEmail(), otp);
+
+        // Return null token because they need to verify via OTP first
+        return new AuthResponse(null, saved.getId(), saved.getName(), saved.getEmail(), saved.getRole().name());
     }
 
     /**
@@ -83,6 +96,11 @@ public class AuthService {
             );
 
             User user = (User) auth.getPrincipal();
+
+            if (!user.isEmailVerified()) {
+                throw new RuntimeException("Please verify your email address before logging in. An OTP was sent during registration.");
+            }
+
             String accessToken = jwtUtil.generateToken(user);
             log.info("User logged in: {}", user.getEmail());
 
@@ -90,6 +108,41 @@ public class AuthService {
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
+    }
+
+    public AuthResponse verifyOtp(VerifyOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_EMAIL + request.getEmail()));
+
+        if (user.getOtp() == null || !user.getOtp().equals(request.getOtp())) {
+            throw new InvalidOtpException("Invalid OTP");
+        }
+        if (user.getOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new InvalidOtpException("OTP has expired. Please request a new one.");
+        }
+
+        user.setEmailVerified(true);
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+        userRepository.save(user);
+
+        emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+
+        String accessToken = jwtUtil.generateToken(user);
+        return new AuthResponse(accessToken, user.getId(), user.getName(), user.getEmail(), user.getRole().name());
+    }
+
+    public ApiResponse sendOtp(SendOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_EMAIL + request.getEmail()));
+
+        String otp = String.format("%06d", secureRandom.nextInt(999999));
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), otp);
+        return new ApiResponse(true, "OTP sent successfully to " + request.getEmail());
     }
 
     /**

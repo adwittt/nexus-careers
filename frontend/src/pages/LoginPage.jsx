@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, Briefcase } from 'lucide-react'
 import { login } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import VerifyOtpModal from '../components/VerifyOtpModal'
 
 /**
  * Login page — matches Image 6 (right panel) mockup exactly.
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
+  const [showOtp, setShowOtp]   = useState(false)
 
   const { loginUser, getDashboardPath } = useAuth()
   const navigate  = useNavigate()
@@ -37,7 +39,11 @@ export default function LoginPage() {
         : '/dashboard/admin')
       navigate(dest, { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password')
+      const msg = err.response?.data?.message || 'Invalid email or password'
+      setError(msg)
+      if (msg.toLowerCase().includes('verify your email')) {
+        setShowOtp(true)
+      }
     } finally {
       setLoading(false)
     }
@@ -45,6 +51,23 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      {showOtp && (
+        <VerifyOtpModal
+          email={form.email}
+          onClose={() => setShowOtp(false)}
+          onSuccess={(data) => {
+            const { accessToken, ...userData } = data
+            loginUser(userData, accessToken)
+            const dest = from || (userData.role === 'JOB_SEEKER'
+              ? '/dashboard/seeker'
+              : userData.role === 'RECRUITER'
+              ? '/dashboard/recruiter'
+              : '/dashboard/admin')
+            navigate(dest, { replace: true })
+          }}
+        />
+      )}
+
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-sm p-8">
 
         {/* Logo */}

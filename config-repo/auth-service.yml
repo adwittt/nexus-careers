@@ -25,10 +25,10 @@ spring:
     enabled: false
 
   mail:
-    host: localhost
-    port: 2525
-    username: test
-    password: test
+    host: smtp.gmail.com
+    port: 587
+    username: adwitkumar86@gmail.com
+    password: jpvhuqicmwxjhmvp
     properties:
       mail:
         transport:
@@ -75,7 +75,7 @@ logging:
 # Swagger / OpenAPI
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: /api/auth/v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
     enabled: true

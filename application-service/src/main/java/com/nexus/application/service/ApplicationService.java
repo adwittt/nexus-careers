@@ -29,13 +29,16 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobServiceClient jobServiceClient;
     private final ApplicationMessageProducer messageProducer;
+    private final EmailService emailService;
 
     public ApplicationService(ApplicationRepository applicationRepository, 
                               JobServiceClient jobServiceClient, 
-                              ApplicationMessageProducer messageProducer) {
+                              ApplicationMessageProducer messageProducer,
+                              EmailService emailService) {
         this.applicationRepository = applicationRepository;
         this.jobServiceClient = jobServiceClient;
         this.messageProducer = messageProducer;
+        this.emailService = emailService;
     }
 
     /**
@@ -139,6 +142,16 @@ public class ApplicationService {
 
         Application updated = applicationRepository.save(app);
         log.info("Application {} status updated: {} → {}", appId, app.getStatus(), newStatus);
+        
+        // Trigger Email Notification
+        emailService.sendStatusUpdateEmail(
+                updated.getApplicantEmail(),
+                updated.getApplicantName(),
+                updated.getJobTitle(),
+                updated.getCompanyName(),
+                newStatus.name()
+        );
+
         return mapToResponse(updated);
     }
 

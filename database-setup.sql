@@ -19,13 +19,13 @@ USE nexus_auth_db;
 -- BCrypt hash of "password123" — use Spring's BCryptPasswordEncoder to generate fresh hashes
 -- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
 
-INSERT INTO users (name, email, password, role, phone, is_active)
+INSERT INTO users (name, email, password, role, phone, is_active, email_verified)
 VALUES
-  ('Super Admin',    'admin@nexus.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ADMIN',      '9000000000', true),
-  ('Rahul Recruiter','recruiter@google.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'RECRUITER',  '9000000001', true),
-  ('Priya Recruiter','recruiter@amazon.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'RECRUITER',  '9000000002', true),
-  ('Jane Seeker',    'jane@gmail.com',       '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'JOB_SEEKER', '9000000003', true),
-  ('Arjun Seeker',   'arjun@gmail.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'JOB_SEEKER', '9000000004', true);
+  ('Super Admin',    'admin@nexus.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ADMIN',      '9000000000', true, true),
+  ('Rahul Recruiter','recruiter@google.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'RECRUITER',  '9000000001', true, true),
+  ('Priya Recruiter','recruiter@amazon.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'RECRUITER',  '9000000002', true, true),
+  ('Jane Seeker',    'jane@gmail.com',       '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'JOB_SEEKER', '9000000003', true, true),
+  ('Arjun Seeker',   'arjun@gmail.com',      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'JOB_SEEKER', '9000000004', true, true);
 
 -- All passwords: "password123"
 

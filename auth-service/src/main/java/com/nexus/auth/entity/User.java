@@ -49,8 +49,16 @@ public class User implements UserDetails {
 
     private String phone;
 
-    @Column(name = "is_active")
+    @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
     private boolean isActive = true;
+
+    @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default false")
+    private boolean emailVerified = false;
+
+    private String otp;
+
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -59,7 +67,7 @@ public class User implements UserDetails {
     public User() {}
 
     public User(Long id, String name, String email, String password, AuthProvider authProvider, 
-                String providerId, Role role, String phone, boolean isActive, LocalDateTime createdAt) {
+                String providerId, Role role, String phone, boolean isActive, boolean emailVerified, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -69,6 +77,7 @@ public class User implements UserDetails {
         this.role = role;
         this.phone = phone;
         this.isActive = isActive;
+        this.emailVerified = emailVerified;
         this.createdAt = createdAt;
     }
 
@@ -90,6 +99,12 @@ public class User implements UserDetails {
     public void setPhone(String phone) { this.phone = phone; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
+    public LocalDateTime getOtpExpiry() { return otpExpiry; }
+    public void setOtpExpiry(LocalDateTime otpExpiry) { this.otpExpiry = otpExpiry; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -128,6 +143,7 @@ public class User implements UserDetails {
         private Role role;
         private String phone;
         private boolean isActive = true;
+        private boolean emailVerified = false;
         private LocalDateTime createdAt;
 
         public UserBuilder id(Long id) { this.id = id; return this; }
@@ -139,10 +155,11 @@ public class User implements UserDetails {
         public UserBuilder role(Role role) { this.role = role; return this; }
         public UserBuilder phone(String phone) { this.phone = phone; return this; }
         public UserBuilder isActive(boolean isActive) { this.isActive = isActive; return this; }
+        public UserBuilder emailVerified(boolean emailVerified) { this.emailVerified = emailVerified; return this; }
         public UserBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public User build() {
-            return new User(id, name, email, password, authProvider, providerId, role, phone, isActive, createdAt);
+            return new User(id, name, email, password, authProvider, providerId, role, phone, isActive, emailVerified, createdAt);
         }
     }
 }

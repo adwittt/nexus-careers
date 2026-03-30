@@ -1,4 +1,4 @@
-package com.nexus.auth.service;
+package com.nexus.application.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -16,26 +16,28 @@ public class EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
-    public void sendVerificationEmail(String to, String otp) {
-        String subject = "Nexus Careers - Verify Your Email Address";
-        String body = "<h1>Welcome to Nexus Careers!</h1>" +
-                      "<p>Your One-Time Password (OTP) for registration is:</p>" +
-                      "<h2 style=\"color: #4A90E2; font-size: 24px;\">" + otp + "</h2>" +
-                      "<p>This OTP will expire in 10 minutes.</p>";
-        sendHtmlEmail(to, subject, body);
-    }
+    public void sendStatusUpdateEmail(String to, String applicantName, String jobTitle, String companyName, String newStatus) {
+        String subject = "Nexus Careers - Application Status Update";
+        
+        String statusMessage = "";
+        switch (newStatus.toUpperCase()) {
+            case "UNDER_REVIEW":
+                statusMessage = "is currently <strong style=\"color:#f39c12;\">Under Review</strong>";
+                break;
+            case "SHORTLISTED":
+                statusMessage = "has been <strong style=\"color:#27ae60;\">Shortlisted</strong> for the next round";
+                break;
+            case "REJECTED":
+                statusMessage = "has been <strong style=\"color:#c0392b;\">Rejected</strong>. Keep applying, don't give up!";
+                break;
+            default:
+                statusMessage = "status has been updated to: <strong>" + newStatus + "</strong>";
+        }
 
-    public void sendPasswordResetEmail(String to, String resetLink) {
-        String subject = "Nexus Careers - Password Reset Request";
-        String body = "<p>Click the link below to reset your password:</p>" +
-                      "<a href=\"" + resetLink + "\">Reset Password</a>";
-        sendHtmlEmail(to, subject, body);
-    }
-
-    public void sendWelcomeEmail(String to, String name) {
-        String subject = "Nexus Careers - Registration Successful";
-        String body = "<h1>Welcome " + name + "!</h1>" +
-                      "<p>Your email has been successfully verified. You can now login to Nexus Careers.</p>";
+        String body = "<h1>Hello " + applicantName + ",</h1>" +
+                      "<p>Your application for <strong>" + jobTitle + "</strong> at <strong>" + companyName + "</strong> " + statusMessage + ".</p>" +
+                      "<p>Best Regards,<br/>Nexus Careers Team</p>";
+                      
         sendHtmlEmail(to, subject, body);
     }
 

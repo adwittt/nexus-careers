@@ -61,4 +61,20 @@ class AdminControllerTest {
                 .header("Authorization", "Bearer token"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void getAllUsers_Empty() throws Exception {
+        when(adminService.getAllUsers(anyString())).thenReturn(List.of());
+        mockMvc.perform(get("/api/admin/users")
+                .header("Authorization", "Bearer token"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getReports_Error() throws Exception {
+        when(adminService.getDashboardReport(anyString())).thenThrow(new RuntimeException("Fail"));
+        mockMvc.perform(get("/api/admin/reports")
+                .header("Authorization", "Bearer token"))
+                .andExpect(status().isInternalServerError());
+    }
 }

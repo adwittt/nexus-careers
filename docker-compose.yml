@@ -20,9 +20,9 @@ services:
       - ./database-setup.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysql123"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
+      interval: 20s
+      timeout: 15s
+      retries: 20
     restart: unless-stopped
     networks:
       - nexus-network

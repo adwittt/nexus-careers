@@ -53,6 +53,18 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @PostMapping("/verify-otp")
+    @Operation(summary = "Verify OTP to activate account and login")
+    public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request));
+    }
+
+    @PostMapping("/send-otp")
+    @Operation(summary = "Request a new OTP for login/verification")
+    public ResponseEntity<ApiResponse> sendOtp(@Valid @RequestBody SendOtpRequest request) {
+        return ResponseEntity.ok(authService.sendOtp(request));
+    }
+
     @PostMapping("/forgot-password")
     @Operation(summary = "Request password reset")
     public ResponseEntity<ApiResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

@@ -79,6 +79,29 @@ public class AuthDtos {
     }
 
 
+    public static class VerifyOtpRequest {
+        @Email(message = "Invalid email")
+        @NotBlank(message = "Email is required")
+        private String email;
+
+        @NotBlank(message = "OTP is required")
+        private String otp;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getOtp() { return otp; }
+        public void setOtp(String otp) { this.otp = otp; }
+    }
+
+    public static class SendOtpRequest {
+        @Email(message = "Invalid email")
+        @NotBlank(message = "Email is required")
+        private String email;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
     public static class AuthResponse {
         private String accessToken;
         private String tokenType = "Bearer";
@@ -118,6 +141,15 @@ public class AuthDtos {
         private String phone;
         private boolean active;
         private String createdAt;
+
+        public UserResponse() {}
+        public UserResponse(Long id, String name, String email, String role, boolean active) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+            this.role = role;
+            this.active = active;
+        }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }

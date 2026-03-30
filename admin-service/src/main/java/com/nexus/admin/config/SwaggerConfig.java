@@ -17,4 +17,6 @@ import org.springframework.context.annotation.Configuration;
     }
 )
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, bearerFormat = "JWT", scheme = "bearer")
-public class SwaggerConfig {}
+public class SwaggerConfig {
+    // Configures OpenAPI/Swagger for Admin Service
+}

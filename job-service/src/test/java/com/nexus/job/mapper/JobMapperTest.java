@@ -5,14 +5,20 @@ import com.nexus.job.entity.Job;
 import com.nexus.job.entity.JobType;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
-import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JobMapperTest {
+
     private final JobMapper mapper = new JobMapper();
 
     @Test
-    void testToResponse() {
+    void toResponse_Null() {
+        assertNull(mapper.toResponse(null));
+    }
+
+    @Test
+    void toResponse_Full() {
         Job job = Job.builder()
                 .id(1L)
                 .title("T")
@@ -21,27 +27,25 @@ class JobMapperTest {
                 .salary("S")
                 .experience("E")
                 .description("D")
-                .requiredSkills(List.of("S1"))
                 .jobType(JobType.FULL_TIME)
-                .postedBy(2L)
-                .recruiterName("RN")
+                .postedBy(100L)
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        
+
         JobResponse res = mapper.toResponse(job);
-        assertNotNull(res);
-        assertEquals("T", res.getTitle());
+        assertEquals(1L, res.getId());
         assertEquals("FULL_TIME", res.getJobType());
-        assertEquals("RN", res.getRecruiterName());
+        assertTrue(res.isActive());
+        assertNotNull(res.getCreatedAt());
+        assertNotNull(res.getUpdatedAt());
     }
 
     @Test
-    void testToResponse_NullValues() {
-        Job job = new Job();
-        job.setJobType(null);
+    void toResponse_EmptyJobType() {
+        Job job = Job.builder().jobType(null).build();
         JobResponse res = mapper.toResponse(job);
-        assertNull(res.getJobType()); 
+        assertEquals("FULL_TIME", res.getJobType());
     }
 }

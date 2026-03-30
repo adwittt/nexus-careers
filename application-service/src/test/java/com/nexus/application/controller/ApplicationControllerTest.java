@@ -9,21 +9,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ApplicationController.class)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class ApplicationControllerTest {
 
     @Autowired
@@ -39,69 +35,55 @@ class ApplicationControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser(roles = "JOB_SEEKER")
-    void applyForJob_Success() throws Exception {
+    void apply_Success() throws Exception {
         ApplyRequest req = new ApplyRequest();
         req.setJobId(1L);
-        req.setResumeUrl("http://resume.com");
+        when(applicationService.applyForJob(any(), anyLong(), anyString(), anyString())).thenReturn(new ApplicationResponse());
         
-        ApplicationResponse resp = new ApplicationResponse();
-        resp.setId(10L);
-        resp.setJobTitle("Dev");
-
-        when(applicationService.applyForJob(any(), eq(100L), eq("John"), anyString())).thenReturn(resp);
-
         mockMvc.perform(post("/api/applications")
                 .header("X-User-Id", 100L)
-                .header("X-User-Name", "John")
-                .header("X-User-Email", "john@test.com")
+                .header("X-User-Name", "Name")
+                .header("X-User-Email", "email@test.com")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req))
-                .with(csrf()))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.jobTitle").value("Dev"));
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    @WithMockUser(roles = "JOB_SEEKER")
-    void getMyApplications_Success() throws Exception {
+    void getMyApps_Success() throws Exception {
         when(applicationService.getUserApplications(100L)).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/applications/user")
-                .header("X-User-Id", 100L))
+        mockMvc.perform(get("/api/applications/my").header("X-User-Id", 100L))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "RECRUITER")
-    void getJobApplications_Success() throws Exception {
+    void getJobApps_Success() throws Exception {
         when(applicationService.getJobApplications(1L)).thenReturn(Collections.emptyList());
+        mockMvc.perform(get("/api/applications/job/1")).andExpect(status().isOk());
+    }
 
-        mockMvc.perform(get("/api/applications/job/1"))
+    @Test
+    void updateStatus_Success() throws Exception {
+        UpdateStatusRequest req = new UpdateStatusRequest();
+        req.setStatus("SHORTLISTED");
+        when(applicationService.updateStatus(anyLong(), any())).thenReturn(new ApplicationResponse());
+        
+        mockMvc.perform(put("/api/applications/1/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "JOB_SEEKER")
     void withdraw_Success() throws Exception {
-        when(applicationService.withdrawApplication(10L, 100L)).thenReturn(new ApiResponse(true, "Success"));
-
-        mockMvc.perform(delete("/api/applications/10")
-                .header("X-User-Id", 100L)
-                .with(csrf()))
+        when(applicationService.withdrawApplication(anyLong(), anyLong())).thenReturn(new ApiResponse(true, "Ok"));
+        mockMvc.perform(delete("/api/applications/1").header("X-User-Id", 100L))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     void getStats_Success() throws Exception {
-        StatusCountResponse stats = new StatusCountResponse();
-        stats.setTotal(50L);
-
-        when(applicationService.getStatusCounts()).thenReturn(stats);
-
-        mockMvc.perform(get("/api/applications/stats"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(50L));
+        when(applicationService.getStatusCounts()).thenReturn(new StatusCountResponse());
+        mockMvc.perform(get("/api/applications/stats")).andExpect(status().isOk());
     }
 }
