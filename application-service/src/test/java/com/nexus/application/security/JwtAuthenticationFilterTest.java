@@ -51,6 +51,8 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_WithBearerToken() throws Exception {
+        when(request.getHeader("X-User-Email")).thenReturn(null);
+        when(request.getHeader("X-User-Role")).thenReturn(null);
         when(request.getHeader("Authorization")).thenReturn("Bearer valid-token");
         when(jwtUtil.isTokenValid("valid-token")).thenReturn(true);
         when(jwtUtil.extractUsername("valid-token")).thenReturn("token@test.com");
@@ -65,6 +67,8 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_WithInvalidToken() throws Exception {
+        when(request.getHeader("X-User-Email")).thenReturn(null);
+        when(request.getHeader("X-User-Role")).thenReturn(null);
         when(request.getHeader("Authorization")).thenReturn("Bearer invalid-token");
         when(jwtUtil.isTokenValid("invalid-token")).thenReturn(false);
 
@@ -76,6 +80,10 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void doFilterInternal_NoAuth() throws Exception {
+        when(request.getHeader("X-User-Email")).thenReturn(null);
+        when(request.getHeader("X-User-Role")).thenReturn(null);
+        when(request.getHeader("Authorization")).thenReturn(null);
+
         filter.doFilterInternal(request, response, filterChain);
 
         assertNull(SecurityContextHolder.getContext().getAuthentication());
