@@ -51,15 +51,15 @@ class JobQueryServiceTest {
 
     @Test
     void searchJobs_ManyFilters_Success() {
-        when(jobRepository.searchJobs(any(), any(), any(), any())).thenReturn(List.of(new Job()));
-        List<JobResponse> result = jobQueryService.searchJobs("Title", "Location", "PART_TIME", "Junior");
+        when(jobRepository.searchJobs(any(), any(), any(), any(), any())).thenReturn(List.of(new Job()));
+        List<JobResponse> result = jobQueryService.searchJobs("Title", "Location", "PART_TIME", "Junior", "50000");
         assertEquals(1, result.size());
     }
 
     @Test
     void searchJobs_NullFilters_Success() {
-        when(jobRepository.searchJobs(any(), any(), any(), any())).thenReturn(Collections.emptyList());
-        List<JobResponse> result = jobQueryService.searchJobs(null, null, null, null);
+        when(jobRepository.searchJobs(any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        List<JobResponse> result = jobQueryService.searchJobs(null, null, null, null, null);
         assertEquals(0, result.size());
     }
 

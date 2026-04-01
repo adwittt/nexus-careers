@@ -1,4 +1,12 @@
-import axios from 'axios'
+import axios, { InternalAxiosRequestConfig } from 'axios'
+
+export interface User {
+  id: string | number;
+  email: string;
+  role: 'JOB_SEEKER' | 'RECRUITER' | 'ADMIN';
+  name?: string;
+  phone?: string;
+}
 
 /**
  * Central Axios instance.
@@ -13,9 +21,9 @@ const api = axios.create({
 
 // ── Request interceptor: attach JWT ──────────────────────────────────────────
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('nexus_token')
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
@@ -43,13 +51,17 @@ api.interceptors.response.use(
 // AUTH SERVICE — /api/auth
 // ════════════════════════════════════════════════════════════════════════════
 
-export const register = (data) => api.post('/api/auth/register', data)
-export const login = (data) => api.post('/api/auth/login', data)
-export const verifyOtp = (data) => api.post('/api/auth/verify-otp', data)
-export const sendOtp = (data) => api.post('/api/auth/send-otp', data)
-export const forgotPassword = (data) => api.post('/api/auth/forgot-password', data)
-export const resetPassword = (data) => api.post('/api/auth/reset-password', data)
-export const getUserProfile = (userId) =>
+export const register = (data: any) => api.post('/api/auth/register', data)
+export const login = (data: any) => api.post('/api/auth/login', data)
+export const verifyOtp = (data: any) => api.post('/api/auth/verify-otp', data)
+export const sendOtp = (data: any) => api.post('/api/auth/send-otp', data)
+export const forgotPassword = (data: any) => api.post('/api/auth/forgot-password', data)
+export const resetPassword = (data: any) => api.post('/api/auth/reset-password', data)
+export const getProfile = (userId: string | number) => api.get(`/api/auth/me?userId=${userId}`)
+export const updateProfile = (userId: string | number, data: any) => api.put(`/api/auth/profile?userId=${userId}`, data)
+export const getAllUsersAdmin = () => api.get('/api/auth/admin/users')
+export const toggleUserStatusAdmin = (id: string | number) => api.put(`/api/auth/admin/users/${id}/toggle`)
+export const getUserProfile = (userId: string | number) =>
   api.get('/api/auth/me', { params: { userId } })
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -57,12 +69,12 @@ export const getUserProfile = (userId) =>
 // ════════════════════════════════════════════════════════════════════════════
 
 export const getAllJobs = () => api.get('/api/jobs')
-export const getJobById = (id) => api.get(`/api/jobs/${id}`)
-export const searchJobs = (params) => api.get('/api/jobs/search', { params })
-export const createJob = (data) => api.post('/api/jobs', data)
-export const updateJob = (id, data) => api.put(`/api/jobs/${id}`, data)
-export const deleteJob = (id) => api.delete(`/api/jobs/${id}`)
-export const getRecruiterJobs = (recruiterId) =>
+export const getJobById = (id: string | number) => api.get(`/api/jobs/${id}`)
+export const searchJobs = (params: any) => api.get('/api/jobs/search', { params })
+export const createJob = (data: any) => api.post('/api/jobs', data)
+export const updateJob = (id: string | number, data: any) => api.put(`/api/jobs/${id}`, data)
+export const deleteJob = (id: string | number) => api.delete(`/api/jobs/${id}`)
+export const getRecruiterJobs = (recruiterId: string | number) =>
   api.get(`/api/jobs/recruiter/${recruiterId}`)
 export const getAllJobsAdmin = () => api.get('/api/jobs/admin/all')
 
@@ -70,22 +82,23 @@ export const getAllJobsAdmin = () => api.get('/api/jobs/admin/all')
 // APPLICATION SERVICE — /api/applications
 // ════════════════════════════════════════════════════════════════════════════
 
-export const uploadResume = (file) => {
+export const uploadResume = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
   return api.post('/api/applications/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
-export const applyForJob = (data) => api.post('/api/applications', data)
+export const applyForJob = (data: any) => api.post('/api/applications', data)
 export const getMyApplications = () => api.get('/api/applications/user')
-export const getJobApplications = (jobId) =>
+export const getJobApplications = (jobId: string | number) =>
   api.get(`/api/applications/job/${jobId}`)
-export const getApplicationById = (id) => api.get(`/api/applications/${id}`)
-export const updateApplicationStatus = (id, status, recruiterNotes = '') =>
+export const getApplicationById = (id: string | number) => api.get(`/api/applications/${id}`)
+export const updateApplicationStatus = (id: string | number, status: string, recruiterNotes = '') =>
   api.put(`/api/applications/${id}/status`, { status, recruiterNotes })
-export const withdrawApplication = (id) => api.delete(`/api/applications/${id}`)
+export const withdrawApplication = (id: string | number) => api.delete(`/api/applications/${id}`)
 export const getApplicationStats = () => api.get('/api/applications/stats')
+export const getRecruiterStats = (jobIds: (string | number)[]) => api.post('/api/applications/stats/recruiter', jobIds)
 
 // ════════════════════════════════════════════════════════════════════════════
 // ADMIN SERVICE — /api/admin
@@ -94,7 +107,7 @@ export const getApplicationStats = () => api.get('/api/applications/stats')
 export const getAdminUsers = () => api.get('/api/admin/users')
 export const getAdminJobs = () => api.get('/api/admin/jobs')
 export const getAdminReports = () => api.get('/api/admin/reports')
-export const toggleUserStatus = (userId) =>
+export const toggleUserStatus = (userId: string | number) =>
   api.put(`/api/admin/users/${userId}/toggle`)
 
 export default api

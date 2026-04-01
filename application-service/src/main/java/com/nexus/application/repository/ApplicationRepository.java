@@ -4,6 +4,7 @@ import com.nexus.application.entity.Application;
 import com.nexus.application.entity.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -39,4 +40,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     /** Applications by company (for recruiter stats) */
     List<Application> findByCompanyNameOrderByAppliedAtDesc(String companyName);
+
+    /** Count applications for a list of jobs */
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.jobId IN :jobIds")
+    long countByJobIdIn(@Param("jobIds") List<Long> jobIds);
+
+    /** Count status-specific applications for a list of jobs */
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.jobId IN :jobIds AND a.status = :status")
+    long countByJobIdInAndStatus(@Param("jobIds") List<Long> jobIds, @Param("status") ApplicationStatus status);
 }

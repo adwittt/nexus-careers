@@ -170,6 +170,26 @@ public class ApplicationService {
     }
 
     /**
+     * Get stats for a list of job IDs (Recruiter).
+     */
+    @Transactional(readOnly = true)
+    public StatusCountResponse getRecruiterStats(List<Long> jobIds) {
+        if (jobIds == null || jobIds.isEmpty()) {
+            log.warn("getRecruiterStats called with empty job list");
+            return new StatusCountResponse();
+        }
+        log.info("Fetching recruiter stats for jobIds: {}", jobIds);
+        StatusCountResponse counts = new StatusCountResponse();
+        counts.setApplied(applicationRepository.countByJobIdInAndStatus(jobIds, ApplicationStatus.APPLIED));
+        counts.setUnderReview(applicationRepository.countByJobIdInAndStatus(jobIds, ApplicationStatus.UNDER_REVIEW));
+        counts.setShortlisted(applicationRepository.countByJobIdInAndStatus(jobIds, ApplicationStatus.SHORTLISTED));
+        counts.setRejected(applicationRepository.countByJobIdInAndStatus(jobIds, ApplicationStatus.REJECTED));
+        counts.setTotal(applicationRepository.countByJobIdIn(jobIds));
+        log.info("Recruiter stats results: total={}, shortlisted={}", counts.getTotal(), counts.getShortlisted());
+        return counts;
+    }
+
+    /**
      * Withdraw an application. Only the applicant can withdraw.
      */
     public ApiResponse withdrawApplication(Long appId, Long userId) {

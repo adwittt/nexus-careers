@@ -37,7 +37,7 @@ public class JobQueryService {
         return jobMapper.toResponse(job);
     }
 
-    public List<JobResponse> searchJobs(String title, String location, String jobType, String experience) {
+    public List<JobResponse> searchJobs(String title, String location, String jobType, String experience, String salary) {
         JobType type = null;
         if (jobType != null && !jobType.isBlank()) {
             try { type = JobType.valueOf(jobType.toUpperCase()); } catch (IllegalArgumentException e) { log.warn("Invalid job type filter: {}", jobType); }
@@ -45,8 +45,9 @@ public class JobQueryService {
         String titleParam = (title != null && !title.isBlank()) ? title : null;
         String locationParam = (location != null && !location.isBlank()) ? location : null;
         String experienceParam = (experience != null && !experience.isBlank()) ? experience : null;
+        String salaryParam = (salary != null && !salary.isBlank()) ? salary : null;
 
-        return jobRepository.searchJobs(titleParam, locationParam, type, experienceParam).stream().map(jobMapper::toResponse).toList();
+        return jobRepository.searchJobs(titleParam, locationParam, type, experienceParam, salaryParam).stream().map(jobMapper::toResponse).toList();
     }
 
     public List<JobResponse> getJobsByRecruiter(Long recruiterId) {

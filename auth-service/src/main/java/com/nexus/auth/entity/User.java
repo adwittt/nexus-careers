@@ -49,6 +49,9 @@ public class User implements UserDetails {
 
     private String phone;
 
+    @Column(name = "company_name")
+    private String companyName;
+
     @Column(name = "is_active", nullable = false, columnDefinition = "boolean default true")
     private boolean isActive = true;
 
@@ -67,7 +70,7 @@ public class User implements UserDetails {
     public User() {}
 
     public User(Long id, String name, String email, String password, AuthProvider authProvider, 
-                String providerId, Role role, String phone, boolean isActive, boolean emailVerified, LocalDateTime createdAt) {
+                String providerId, Role role, String phone, String companyName, boolean isActive, boolean emailVerified, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -76,6 +79,7 @@ public class User implements UserDetails {
         this.providerId = providerId;
         this.role = role;
         this.phone = phone;
+        this.companyName = companyName;
         this.isActive = isActive;
         this.emailVerified = emailVerified;
         this.createdAt = createdAt;
@@ -97,6 +101,8 @@ public class User implements UserDetails {
     public void setRole(Role role) { this.role = role; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
     public boolean isEmailVerified() { return emailVerified; }
@@ -142,6 +148,7 @@ public class User implements UserDetails {
         private String providerId;
         private Role role;
         private String phone;
+        private String companyName;
         private boolean isActive = true;
         private boolean emailVerified = false;
         private LocalDateTime createdAt;
@@ -154,12 +161,13 @@ public class User implements UserDetails {
         public UserBuilder providerId(String providerId) { this.providerId = providerId; return this; }
         public UserBuilder role(Role role) { this.role = role; return this; }
         public UserBuilder phone(String phone) { this.phone = phone; return this; }
+        public UserBuilder companyName(String companyName) { this.companyName = companyName; return this; }
         public UserBuilder isActive(boolean isActive) { this.isActive = isActive; return this; }
         public UserBuilder emailVerified(boolean emailVerified) { this.emailVerified = emailVerified; return this; }
         public UserBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public User build() {
-            return new User(id, name, email, password, authProvider, providerId, role, phone, isActive, emailVerified, createdAt);
+            return new User(id, name, email, password, authProvider, providerId, role, phone, companyName, isActive, emailVerified, createdAt);
         }
     }
 }

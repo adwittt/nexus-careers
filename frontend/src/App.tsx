@@ -1,22 +1,33 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 
-// Pages
-import HomePage           from './pages/HomePage'
-import LoginPage          from './pages/LoginPage'
-import RegisterPage       from './pages/RegisterPage'
-import JobSearchPage      from './pages/JobSearchPage'
-import JobDetailPage      from './pages/JobDetailPage'
-import ApplyJobPage       from './pages/ApplyJobPage'
-import JobSeekerDashboard from './pages/JobSeekerDashboard'
-import RecruiterDashboard from './pages/RecruiterDashboard'
-import AdminDashboard     from './pages/AdminDashboard'
+import React, { Suspense } from 'react'
 
-import ForgotPasswordPage    from './pages/ForgotPasswordPage'
-import ResetPasswordPage     from './pages/ResetPasswordPage'
-import OAuth2RedirectHandler from './pages/OAuth2RedirectHandler'
+// Lazy loaded Pages
+const HomePage           = React.lazy(() => import('./pages/HomePage'))
+const LoginPage          = React.lazy(() => import('./pages/LoginPage'))
+const RegisterPage       = React.lazy(() => import('./pages/RegisterPage'))
+const JobSearchPage      = React.lazy(() => import('./pages/JobSearchPage'))
+const JobDetailPage      = React.lazy(() => import('./pages/JobDetailPage'))
+const ApplyJobPage       = React.lazy(() => import('./pages/ApplyJobPage'))
+const JobSeekerDashboard = React.lazy(() => import('./pages/JobSeekerDashboard'))
+const RecruiterDashboard = React.lazy(() => import('./pages/RecruiterDashboard'))
+const AdminDashboard     = React.lazy(() => import('./pages/AdminDashboard'))
+
+const ForgotPasswordPage    = React.lazy(() => import('./pages/ForgotPasswordPage'))
+const ResetPasswordPage     = React.lazy(() => import('./pages/ResetPasswordPage'))
+const OAuth2RedirectHandler = React.lazy(() => import('./pages/OAuth2RedirectHandler'))
+const Profile               = React.lazy(() => import('./pages/Profile'))
+
+// Loading Fallback Component
+const PageLoader = () => (
+  <div className="flex justify-center items-center min-h-[50vh]">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+)
 
 function AppRoutes() {
   const { user } = useAuth()
@@ -24,8 +35,9 @@ function AppRoutes() {
   return (
     <>
       <Navbar />
-      <Routes>
-        {/* Public routes */}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public routes */}
         <Route path="/"         element={<HomePage />} />
         <Route path="/jobs"     element={<JobSearchPage />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
@@ -56,26 +68,35 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
-        {/* Protected: Admin */}
         <Route path="/dashboard/admin" element={
           <ProtectedRoute roles={['ADMIN']}>
             <AdminDashboard />
           </ProtectedRoute>
         } />
 
+        {/* Global Protected: Profile (available to all roles) */}
+        <Route path="/profile" element={
+          <ProtectedRoute roles={['JOB_SEEKER', 'RECRUITER', 'ADMIN']}>
+            <Profile />
+          </ProtectedRoute>
+        } />
+
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </>
   )
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

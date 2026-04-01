@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
@@ -21,6 +23,7 @@ import java.util.List;
 @RequestMapping("/api/applications")
 @Tag(name = "Applications", description = "Submit and manage job applications")
 public class ApplicationController {
+    private static final Logger log = LoggerFactory.getLogger(ApplicationController.class);
 
     private final ApplicationService applicationService;
 
@@ -109,5 +112,16 @@ public class ApplicationController {
     @Operation(summary = "Get application stats", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<StatusCountResponse> getStats() {
         return ResponseEntity.ok(applicationService.getStatusCounts());
+    }
+
+    /**
+     * Get status counts for a list of job IDs (Recruiter).
+     */
+    @PostMapping("/stats/recruiter")
+    @PreAuthorize("hasRole('RECRUITER')")
+    @Operation(summary = "Get recruiter application stats", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<StatusCountResponse> getRecruiterStats(@RequestBody List<Long> jobIds) {
+        log.info("Controller received recruiter stats request for jobIds: {}", jobIds);
+        return ResponseEntity.ok(applicationService.getRecruiterStats(jobIds));
     }
 }

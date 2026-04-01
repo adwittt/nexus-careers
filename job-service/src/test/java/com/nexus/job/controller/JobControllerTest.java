@@ -69,7 +69,7 @@ class JobControllerTest {
 
     @Test
     void searchJobs_Success() throws Exception {
-        when(jobQueryService.searchJobs(any(), any(), any(), any())).thenReturn(Collections.emptyList());
+        when(jobQueryService.searchJobs(any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
         mockMvc.perform(get("/api/jobs/search?title=Dev")).andExpect(status().isOk());
     }
 

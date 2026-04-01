@@ -29,7 +29,7 @@ class JobRepositoryTest {
                 .build();
         jobRepository.save(job);
 
-        List<Job> results = jobRepository.searchJobs("Software", "Online", JobType.REMOTE, null);
+        List<Job> results = jobRepository.searchJobs("Software", "Online", JobType.REMOTE, null, null);
         assertFalse(results.isEmpty());
         assertEquals("Software Engineer", results.get(0).getTitle());
     }

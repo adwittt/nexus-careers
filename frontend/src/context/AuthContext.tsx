@@ -1,13 +1,30 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-const AuthContext = createContext(null)
+export interface User {
+  id: string | number;
+  email: string;
+  role: 'JOB_SEEKER' | 'RECRUITER' | 'ADMIN';
+  name?: string;
+  userId?: string | number;
+  companyName?: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  loginUser: (userData: User, token: string) => void;
+  logout: () => void;
+  getDashboardPath: () => string;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null)
 
 /**
  * AuthProvider wraps the app and provides user state + auth actions.
  * Persists user data in localStorage between sessions.
  */
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   // On mount, restore user from localStorage
@@ -29,7 +46,7 @@ export function AuthProvider({ children }) {
    * Called after successful login/register.
    * Saves token and user to localStorage.
    */
-  const loginUser = (userData, token) => {
+  const loginUser = (userData: User, token: string) => {
     localStorage.setItem('nexus_token', token)
     localStorage.setItem('nexus_user', JSON.stringify(userData))
     setUser(userData)

@@ -28,6 +28,7 @@ public class AuthDtos {
         private Role role;
 
         private String phone;
+        private String companyName;
 
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
@@ -39,6 +40,8 @@ public class AuthDtos {
         public void setRole(Role role) { this.role = role; }
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getCompanyName() { return companyName; }
+        public void setCompanyName(String companyName) { this.companyName = companyName; }
     }
 
     public static class LoginRequest {
@@ -139,6 +142,7 @@ public class AuthDtos {
         private String email;
         private String role;
         private String phone;
+        private String companyName;
         private boolean active;
         private String createdAt;
 
@@ -161,10 +165,27 @@ public class AuthDtos {
         public void setRole(String role) { this.role = role; }
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getCompanyName() { return companyName; }
+        public void setCompanyName(String companyName) { this.companyName = companyName; }
         public boolean isActive() { return active; }
         public void setActive(boolean active) { this.active = active; }
         public String getCreatedAt() { return createdAt; }
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    }
+
+    public static class UpdateProfileRequest {
+        @NotBlank(message = "Name is required")
+        private String name;
+
+        private String phone;
+        private String companyName;
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        public String getCompanyName() { return companyName; }
+        public void setCompanyName(String companyName) { this.companyName = companyName; }
     }
 
     public static class ApiResponse {

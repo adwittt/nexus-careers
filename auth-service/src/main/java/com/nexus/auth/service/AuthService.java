@@ -42,9 +42,9 @@ public class AuthService {
     private final PasswordResetTokenRepository tokenRepository;
     private final EmailService emailService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, 
-                      AuthenticationManager authenticationManager, PasswordResetTokenRepository tokenRepository, 
-                      EmailService emailService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+            AuthenticationManager authenticationManager, PasswordResetTokenRepository tokenRepository,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -52,8 +52,6 @@ public class AuthService {
         this.tokenRepository = tokenRepository;
         this.emailService = emailService;
     }
-
-
 
     /**
      * Register a new user. Throws if email already in use.
@@ -71,8 +69,9 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .phone(request.getPhone())
+                .companyName(request.getCompanyName())
                 .build();
-        
+
         user.setEmailVerified(false);
         user.setOtp(otp);
         user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
@@ -92,13 +91,13 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         try {
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
             User user = (User) auth.getPrincipal();
 
             if (!user.isEmailVerified()) {
-                throw new RuntimeException("Please verify your email address before logging in. An OTP was sent during registration.");
+                throw new RuntimeException(
+                        "Please verify your email address before logging in. An OTP was sent during registration.");
             }
 
             String accessToken = jwtUtil.generateToken(user);
@@ -146,6 +145,24 @@ public class AuthService {
     }
 
     /**
+     * Update user profile.
+     */
+    public UserResponse updateProfile(Long id, UpdateProfileRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        
+        user.setName(request.getName());
+        user.setPhone(request.getPhone());
+        if (request.getCompanyName() != null) {
+            user.setCompanyName(request.getCompanyName());
+        }
+        
+        User saved = userRepository.save(user);
+        log.info("User profile updated: {}", saved.getEmail());
+        return mapToUserResponse(saved);
+    }
+
+    /**
      * Get user profile by ID.
      */
     @Transactional(readOnly = true)
@@ -179,20 +196,20 @@ public class AuthService {
 
     public ApiResponse requestPasswordReset(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        
+
         if (user == null) {
             log.warn("Password reset requested for non-existent email: {}", request.getEmail());
             return new ApiResponse(false, "User not found with email: " + request.getEmail());
         }
 
         String tokenStr = UUID.randomUUID().toString();
-        
+
         PasswordResetToken token = PasswordResetToken.builder()
                 .token(tokenStr)
                 .user(user)
                 .expiryDate(LocalDateTime.now().plusHours(1))
                 .build();
-                
+
         tokenRepository.save(token);
 
         String resetLink = "http://localhost:3000/reset-password?token=" + tokenStr;
@@ -225,6 +242,7 @@ public class AuthService {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
         response.setPhone(user.getPhone());
+        response.setCompanyName(user.getCompanyName());
         response.setActive(user.isActive());
         response.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
         return response;

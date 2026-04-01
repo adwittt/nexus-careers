@@ -100,6 +100,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.getUserById(userId));
     }
 
+    @PutMapping("/profile")
+    @Operation(summary = "Update current user profile", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserResponse> updateProfile(@RequestParam("userId") Long userId, @Valid @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateProfile(userId, request));
+    }
+
 
     /**
      * Get all users (Admin only).

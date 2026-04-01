@@ -28,13 +28,15 @@ public interface JobRepository extends JpaRepository<Job, Long> {
         AND (:location IS NULL OR LOWER(j.location) LIKE LOWER(CONCAT('%', :location, '%')))
         AND (:jobType IS NULL OR j.jobType = :jobType)
         AND (:experience IS NULL OR LOWER(j.experience) LIKE LOWER(CONCAT('%', :experience, '%')))
+        AND (:salary IS NULL OR LOWER(j.salary) LIKE LOWER(CONCAT('%', :salary, '%')))
         ORDER BY j.createdAt DESC
     """)
-    List<Job> searchJobs(
+     List<Job> searchJobs(
             @Param("title") String title,
             @Param("location") String location,
             @Param("jobType") JobType jobType,
-            @Param("experience") String experience
+            @Param("experience") String experience,
+            @Param("salary") String salary
     );
 
     List<Job> findByPostedByAndIsActiveTrueOrderByCreatedAtDesc(Long postedBy);

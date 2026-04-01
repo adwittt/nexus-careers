@@ -72,8 +72,9 @@ public class JobController {
             @RequestParam(name = "title", required = false) String title,
             @RequestParam(name = "location", required = false) String location,
             @RequestParam(name = "jobType", required = false) String jobType,
-            @RequestParam(name = "experience", required = false) String experience) {
-        return ResponseEntity.ok(jobQueryService.searchJobs(title, location, jobType, experience));
+            @RequestParam(name = "experience", required = false) String experience,
+            @RequestParam(name = "salary", required = false) String salary) {
+        return ResponseEntity.ok(jobQueryService.searchJobs(title, location, jobType, experience, salary));
     }
 
     /**
