@@ -383,6 +383,7 @@ export default function JobSearchPage() {
                       job={job} 
                       application={userApps[job.id]} 
                       onWithdraw={() => loadJobs()}
+                      onApply={() => {}}
                       showApply 
                     />
                   ))}

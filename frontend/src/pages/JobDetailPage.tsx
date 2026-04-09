@@ -211,7 +211,7 @@ export default function JobDetailPage() {
   )
 }
 
-function InfoCell({ label, value, border }) {
+function InfoCell({ label, value, border }: any) {
   return (
     <div className={`px-5 py-4 ${border ? 'border-l border-gray-100 dark:border-slate-700' : ''} bg-gray-50/50 dark:bg-slate-800/50`}>
       <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold mb-1">{label}</p>

@@ -13,6 +13,7 @@ export default function OAuth2RedirectHandler() {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]))
         const userData = {
+          id: payload.userId,
           userId: payload.userId,
           email: payload.sub,
           name: payload.name || '',

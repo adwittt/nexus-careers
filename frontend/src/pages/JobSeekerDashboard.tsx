@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Briefcase, Search, Clock, CheckCircle2, XCircle,
-  AlertCircle, TrendingUp, FileText, Eye
+  AlertCircle, TrendingUp, FileText, Eye, Hand, MessageSquare
 } from 'lucide-react'
 import { getMyApplications, withdrawApplication } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -59,7 +59,7 @@ export default function JobSeekerDashboard() {
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div className="bg-blue-700 dark:bg-slate-800 text-white px-4 py-8 shadow-sm">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! 👋</h1>
+          <h1 className="text-2xl font-bold flex items-center gap-2">Welcome back, {user?.name?.split(' ')[0]}! <Hand size={24} className="text-amber-500" /></h1>
           <p className="text-blue-200 dark:text-slate-400 mt-1 text-sm">
             Track your applications and discover new opportunities
           </p>
@@ -163,8 +163,8 @@ export default function JobSeekerDashboard() {
                         }) : '—'}
                       </p>
                       {app.recruiterNotes && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 px-2 py-1.5 rounded-lg font-medium border border-blue-100 dark:border-blue-900/40 inline-block">
-                          💬 {app.recruiterNotes}
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 bg-blue-50 dark:bg-blue-900/20 px-2 py-1.5 rounded-lg font-medium border border-blue-100 dark:border-blue-900/40 inline-flex items-center gap-1.5">
+                          <MessageSquare size={13} /> {app.recruiterNotes}
                         </p>
                       )}
                     </div>

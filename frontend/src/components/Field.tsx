@@ -4,7 +4,7 @@ import React from 'react'
  * Extracted outside to ensure a stable component identity 
  * across re-renders — prevents input focus loss bug.
  */
-const Field = ({ label, name, type = 'text', placeholder, value, onChange, error, right, rightIcon }) => {
+const Field = ({ label, name, type = 'text', placeholder, value, onChange, error, right, rightIcon }: any) => {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>

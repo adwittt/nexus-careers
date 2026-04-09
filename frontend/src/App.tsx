@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
 
 import React, { Suspense } from 'react'
+import Footer from './components/Footer'
 
 // Lazy loaded Pages
 const HomePage           = React.lazy(() => import('./pages/HomePage'))
@@ -35,56 +36,61 @@ function AppRoutes() {
   return (
     <>
       <Navbar />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public routes */}
-        <Route path="/"         element={<HomePage />} />
-        <Route path="/jobs"     element={<JobSearchPage />} />
-        <Route path="/jobs/:id" element={<JobDetailPage />} />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public routes */}
+            <Route path="/"         element={<HomePage />} />
+            <Route path="/jobs"     element={<JobSearchPage />} />
+            <Route path="/jobs/:id" element={<JobDetailPage />} />
 
-        {/* Auth routes — redirect if already logged in */}
-        <Route path="/login"    element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password"  element={<ResetPasswordPage />} />
-        <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+            {/* Auth routes — redirect if already logged in */}
+            <Route path="/login"    element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+            <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
+            <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-        {/* Protected: Job Seeker */}
-        <Route path="/jobs/:id/apply" element={
-          <ProtectedRoute roles={['JOB_SEEKER']}>
-            <ApplyJobPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/seeker" element={
-          <ProtectedRoute roles={['JOB_SEEKER']}>
-            <JobSeekerDashboard />
-          </ProtectedRoute>
-        } />
+            {/* Protected: Job Seeker */}
+            <Route path="/jobs/:id/apply" element={
+              <ProtectedRoute roles={['JOB_SEEKER']}>
+                <ApplyJobPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/seeker" element={
+              <ProtectedRoute roles={['JOB_SEEKER']}>
+                <JobSeekerDashboard />
+              </ProtectedRoute>
+            } />
 
-        {/* Protected: Recruiter */}
-        <Route path="/dashboard/recruiter" element={
-          <ProtectedRoute roles={['RECRUITER']}>
-            <RecruiterDashboard />
-          </ProtectedRoute>
-        } />
+            {/* Protected: Recruiter */}
+            <Route path="/dashboard/recruiter" element={
+              <ProtectedRoute roles={['RECRUITER']}>
+                <RecruiterDashboard />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/dashboard/admin" element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
+            <Route path="/dashboard/admin" element={
+              <ProtectedRoute roles={['ADMIN']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
 
-        {/* Global Protected: Profile (available to all roles) */}
-        <Route path="/profile" element={
-          <ProtectedRoute roles={['JOB_SEEKER', 'RECRUITER', 'ADMIN']}>
-            <Profile />
-          </ProtectedRoute>
-        } />
+            {/* Global Protected: Profile (available to all roles) */}
+            <Route path="/profile" element={
+              <ProtectedRoute roles={['JOB_SEEKER', 'RECRUITER', 'ADMIN']}>
+                <Profile />
+              </ProtectedRoute>
+            } />
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </div>
+        <Footer />
+      </div>
     </>
   )
 }

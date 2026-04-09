@@ -1,8 +1,45 @@
-import { useState, useEffect } from 'react'
-import { Users, Briefcase, FileText, TrendingUp, ToggleLeft, ToggleRight, Search, Shield } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Users, Briefcase, FileText, TrendingUp, ToggleLeft, ToggleRight, Search, Shield, Phone, Calendar } from 'lucide-react'
 import { getAdminUsers, getAdminJobs, getAdminReports, toggleUserStatus } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import RoleBadge from '../components/RoleBadge'
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone?: string;
+  createdAt?: string;
+  active?: boolean;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  companyName: string;
+  location: string;
+  salary?: string;
+  jobType?: string;
+  createdAt?: string;
+  active?: boolean;
+}
+
+interface ReportData {
+  totalUsers?: number;
+  jobSeekers?: number;
+  recruiters?: number;
+  totalJobs?: number;
+  activeJobs?: number;
+  applications?: {
+    total?: number;
+    shortlisted?: number;
+    rejected?: number;
+    applied?: number;
+    underReview?: number;
+    [key: string]: number | undefined;
+  };
+}
 
 const TABS = ['Overview', 'Users', 'Jobs', 'Reports']
 
@@ -12,13 +49,13 @@ const TABS = ['Overview', 'Users', 'Jobs', 'Reports']
 export default function AdminDashboard() {
   const { user }            = useAuth()
   const [tab, setTab]       = useState('Overview')
-  const [users, setUsers]   = useState([])
-  const [jobs, setJobs]     = useState([])
-  const [report, setReport] = useState(null)
+  const [users, setUsers]   = useState<User[]>([])
+  const [jobs, setJobs]     = useState<Job[]>([])
+  const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(false)
   const [userSearch, setUserSearch] = useState('')
   const [jobSearch, setJobSearch]   = useState('')
-  const [togglingUser, setTogglingUser] = useState(null)
+  const [togglingUser, setTogglingUser] = useState<string | null>(null)
 
   useEffect(() => { loadData() }, [tab])
 
@@ -42,14 +79,14 @@ export default function AdminDashboard() {
     } finally { setLoading(false) }
   }
 
-  const handleToggleUser = async (userId) => {
+  const handleToggleUser = async (userId: string) => {
     setTogglingUser(userId)
     try {
       await toggleUserStatus(userId)
       setUsers(prev => prev.map(u =>
-        u.id === userId ? { ...u, active: !u.active } : u
+        u.id === userId ? { ...u, active: u.active === false ? true : false } : u
       ))
-    } catch (e) {
+    } catch (e: any) {
       alert(e.response?.data?.message || 'Could not toggle user')
     } finally { setTogglingUser(null) }
   }
@@ -150,8 +187,8 @@ export default function AdminDashboard() {
                         { label: 'Shortlisted',  key: 'shortlisted', color: 'bg-green-500'  },
                         { label: 'Rejected',     key: 'rejected',    color: 'bg-red-400'    },
                       ].map(({ label, key, color }) => {
-                        const val   = report.applications[key] || 0
-                        const total = report.applications.total || 1
+                        const val   = report.applications?.[key] || 0
+                        const total = report.applications?.total || 1
                         const pct   = Math.round((val / total) * 100)
                         return (
                           <div key={key} className="group">
@@ -228,8 +265,8 @@ export default function AdminDashboard() {
                           <RoleBadge role={u.role}/>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-[11px] text-gray-500 dark:text-slate-400 font-medium">📞 {u.phone || 'N/A'}</div>
-                          <div className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">🗓️ Joined {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric'}) : '—'}</div>
+                          <div className="text-[11px] text-gray-500 dark:text-slate-400 font-medium flex items-center gap-1.5"><Phone size={10} /> {u.phone || 'N/A'}</div>
+                          <div className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 flex items-center gap-1.5"><Calendar size={10} /> Joined {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric'}) : '—'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
@@ -401,7 +438,15 @@ export default function AdminDashboard() {
 
 // ── Sub-components ──────────────────────────────────────────────────────────
 
-function OverviewCard({ icon, label, value, sub, bg }) {
+interface OverviewCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  sub: string;
+  bg: string;
+}
+
+function OverviewCard({ icon, label, value, sub, bg }: OverviewCardProps) {
   return (
     <div className={`${bg} rounded-2xl p-6 border border-white dark:border-slate-800/50 transition-all hover:scale-[1.02] hover:shadow-lg group shadow-sm`}>
       <div className="flex items-start justify-between mb-4">
@@ -414,7 +459,13 @@ function OverviewCard({ icon, label, value, sub, bg }) {
   )
 }
 
-function ReportCard({ title, items, color }) {
+interface ReportCardProps {
+  title: string;
+  items: { label: string; value: string | number }[];
+  color: 'blue' | 'green' | 'purple';
+}
+
+function ReportCard({ title, items, color }: ReportCardProps) {
   const accent = { 
     blue: 'border-blue-500 dark:border-blue-400 shadow-blue-500/5', 
     green: 'border-green-500 dark:border-green-400 shadow-green-500/5', 
@@ -435,7 +486,12 @@ function ReportCard({ title, items, color }) {
   )
 }
 
-function MapPin({ size, className }) {
+interface MapPinProps {
+  size: number;
+  className?: string;
+}
+
+function MapPin({ size, className }: MapPinProps) {
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
