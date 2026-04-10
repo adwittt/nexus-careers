@@ -10,7 +10,9 @@ jobs:
   # 1. Build and Test Java Microservices (ON YOUR MAC)
   java-build:
     name: Build ${{ matrix.service }}
-    runs-on: self-hosted # Changed from ubuntu-latest
+    runs-on: self-hosted
+    env:
+      PATH: /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     strategy:
       fail-fast: false
       matrix:
@@ -19,40 +21,33 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Check Environment
-        run: |
-          echo "Current Path: $PATH"
-          java -version
-          /opt/homebrew/bin/mvn -version
-
       - name: Build with Maven
         working-directory: ${{ matrix.service }}
-        run: /opt/homebrew/bin/mvn clean package -DskipTests=true
+        run: mvn clean package -DskipTests=true
 
   # 2. Build and Test Frontend (ON YOUR MAC)
   frontend-build:
     name: Build Frontend
     runs-on: self-hosted
+    env:
+      PATH: /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       
-      - name: Check Environment
-        run: |
-          /opt/homebrew/bin/node -v
-          /opt/homebrew/bin/npm -v
-
       - name: Install and Build
         working-directory: frontend
         run: |
-          /opt/homebrew/bin/npm install
-          /opt/homebrew/bin/npm run build
+          npm install
+          npm run build
 
   # 3. Overall Stack Deployment
   deploy-to-local:
     name: Deploy to Local Docker
     needs: [java-build, frontend-build]
     runs-on: self-hosted
+    env:
+      PATH: /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Code
@@ -60,7 +55,6 @@ jobs:
 
       - name: Start Full Stack in Docker Desktop
         run: |
-          export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
           echo "Starting the deployment on Adwit's Mac..."
           docker compose down
           docker compose up -d --build
