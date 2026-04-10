@@ -56,5 +56,11 @@ jobs:
       - name: Start Full Stack in Docker Desktop
         run: |
           echo "Starting the deployment on Adwit's Mac..."
-          docker compose down
-          docker compose up -d --build
+          # Clean up any existing instances of this project
+          docker compose -p nexus-careers down --remove-orphans || true
+          
+          # Build and start the stack
+          docker compose -p nexus-careers up -d --build --quiet-pull
+          
+          echo "Deployment successful. Listing running containers:"
+          docker compose -p nexus-careers ps
