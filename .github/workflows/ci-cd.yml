@@ -55,11 +55,11 @@ jobs:
 
       - name: Start Full Stack in Docker Desktop
         run: |
-          echo "Starting the deployment on Adwit's Mac..."
-          # Clean up any existing instances of this project
-          docker compose -p nexus-careers down --remove-orphans || true
+          echo "Cleaning up any conflicting containers..."
+          docker ps -a --filter "name=nexus-" --format "{{.Name}}" | xargs docker rm -f || true
           
-          # Build and start the stack
+          echo "Starting the deployment on Adwit's Mac..."
+          docker compose -p nexus-careers down --remove-orphans || true
           docker compose -p nexus-careers up -d --build --quiet-pull
           
           echo "Deployment successful. Listing running containers:"
