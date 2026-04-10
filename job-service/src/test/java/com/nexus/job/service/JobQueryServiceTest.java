@@ -30,7 +30,7 @@ class JobQueryServiceTest {
 
     @Test
     void getAllJobs_Success() {
-        when(jobRepository.findByIsActiveTrueOrderByCreatedAtDesc()).thenReturn(List.of(new Job()));
+        when(jobRepository.findAllActiveJobsSorted()).thenReturn(List.of(new Job()));
         List<JobResponse> result = jobQueryService.getAllJobs();
         assertEquals(1, result.size());
     }

@@ -1,20 +1,32 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { LogOut, User, Briefcase, Sun, Moon } from 'lucide-react'
+import { LogOut, User, Briefcase, Sun, Moon, Menu, X } from 'lucide-react'
 
 /**
- * Top navigation bar — matches the mockup: "Nexus Careers | Home Jobs Companies [Login]"
+ * Top navigation bar — responsive with hamburger menu on mobile.
  */
 export default function Navbar() {
   const { user, logout, getDashboardPath } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
     navigate('/')
+    setMobileOpen(false)
   }
+
+  const closeMobile = () => setMobileOpen(false)
+
+  const navItems = [
+    { label: 'Home', path: '/' },
+    { label: 'Jobs', path: '/jobs' },
+  ]
+
+  const dashboardPath = user ? getDashboardPath() : '/'
 
   return (
     <nav className="bg-white dark:bg-slate-900 shadow-sm border-b border-gray-200 dark:border-slate-800 sticky top-0 z-50 transition-colors">
@@ -22,7 +34,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 no-underline">
+          <Link to="/" className="flex items-center gap-2 no-underline flex-shrink-0">
             <div className="w-7 h-7 bg-blue-700 rounded-md flex items-center justify-center">
               <Briefcase size={15} className="text-white" />
             </div>
@@ -31,15 +43,14 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Nav links */}
-          <div className="flex items-center gap-4">
+          {/* Desktop Nav links */}
+          <div className="hidden md:flex items-center gap-4">
             <div className="flex items-center gap-6 mr-2">
-              <Link to="/"     className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-medium no-underline">
-                Home
-              </Link>
-              <Link to="/jobs" className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-medium no-underline">
-                Jobs
-              </Link>
+              {navItems.map(item => (
+                <Link key={item.path} to={item.path} className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-medium no-underline">
+                  {item.label}
+                </Link>
+              ))}
             </div>
 
             {/* Theme Toggle */}
@@ -54,7 +65,7 @@ export default function Navbar() {
             {user ? (
               <div className="flex items-center gap-3">
                 <Link
-                  to={getDashboardPath()}
+                  to={dashboardPath}
                   className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-400 font-medium no-underline border-r border-gray-200 dark:border-slate-800 pr-3 mr-1"
                 >
                   <Briefcase size={15} />
@@ -88,8 +99,63 @@ export default function Navbar() {
               </Link>
             )}
           </div>
+
+          {/* Mobile: theme toggle + hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-0 cursor-pointer"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border-0 cursor-pointer"
+            >
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Dropdown */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg">
+          <div className="px-4 py-4 space-y-2">
+            {navItems.map(item => (
+              <Link key={item.path} to={item.path} onClick={closeMobile} className="block px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 no-underline transition-colors">
+                {item.label}
+              </Link>
+            ))}
+
+            {user ? (
+              <>
+                <Link to={dashboardPath} onClick={closeMobile} className="flex items-center gap-2 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 no-underline transition-colors">
+                  <Briefcase size={16} /> Dashboard
+                </Link>
+                <Link to="/profile" onClick={closeMobile} className="flex items-center gap-2 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 no-underline transition-colors">
+                  <User size={16} /> {user.name?.split(' ')[0]}
+                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ml-auto">
+                    {user.role === 'JOB_SEEKER' ? 'Seeker' : user.role === 'RECRUITER' ? 'Recruiter' : 'Admin'}
+                  </span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-0 cursor-pointer bg-transparent text-left"
+                >
+                  <LogOut size={16} /> Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" onClick={closeMobile} className="block no-underline">
+                <button className="w-full btn-primary text-sm py-3 px-4 mt-2">
+                  Login
+                </button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   )
 }

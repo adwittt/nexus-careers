@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, MapPin, Building2, Lock
 } from 'lucide-react'
 import {
-  getRecruiterJobs, createJob, deleteJob,
+  getRecruiterJobs, createJob, updateJob, deleteJob,
   getJobApplications, updateApplicationStatus,
   getRecruiterStats, getUserProfile, updateProfile
 } from '../services/api'
@@ -17,7 +17,7 @@ const JOB_TYPES = ['FULL_TIME', 'PART_TIME', 'REMOTE', 'CONTRACT', 'INTERNSHIP']
 const EMPTY_FORM = {
   title: '', companyName: '', location: '', salary: '',
   experience: '', description: '', requiredSkills: '',
-  jobType: 'FULL_TIME'
+  jobType: 'FULL_TIME', applicationDeadline: ''
 }
 
 /**
@@ -34,6 +34,7 @@ export default function RecruiterDashboard() {
   const [saving, setSaving]    = useState(false)
   const [formError, setFormError] = useState('')
   const [stats, setStats]       = useState({ total: 0, shortlisted: 0 })
+  const [editingJobId, setEditingJobId] = useState<number | null>(null)
 
   // Company name lock: once set, the recruiter can't change it
   const [lockedCompanyName, setLockedCompanyName] = useState<string | null>(null)
@@ -102,7 +103,7 @@ export default function RecruiterDashboard() {
     finally { setLoading(false) }
   }
 
-  const handleCreateJob = async (e: React.FormEvent) => {
+  const handleSaveJob = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError('')
     if (!form.title || !form.companyName || !form.location) {
@@ -111,13 +112,24 @@ export default function RecruiterDashboard() {
     }
     setSaving(true)
     try {
+      let finalDeadline = form.applicationDeadline;
+      if (finalDeadline && finalDeadline.length === 10) {
+          finalDeadline = finalDeadline + 'T23:59:59';
+      }
+
       const payload = {
         ...form,
+        applicationDeadline: finalDeadline || null,
         requiredSkills: form.requiredSkills
-          ? form.requiredSkills.split(',').map(s => s.trim()).filter(Boolean)
+          ? form.requiredSkills.split(',').map((s: string) => s.trim()).filter(Boolean)
           : []
       }
-      await createJob(payload)
+
+      if (editingJobId) {
+        await updateJob(editingJobId, payload)
+      } else {
+        await createJob(payload)
+      }
 
       // After first job is posted, lock the company name and save to profile
       if (!lockedCompanyName && form.companyName) {
@@ -134,10 +146,11 @@ export default function RecruiterDashboard() {
       }
 
       setForm({ ...EMPTY_FORM, companyName: form.companyName })
+      setEditingJobId(null)
       setShowForm(false)
       await loadJobs()
     } catch (e: any) {
-      setFormError(e.response?.data?.message || 'Failed to create job')
+      setFormError(e.response?.data?.message || 'Failed to save job')
     } finally { setSaving(false) }
   }
 
@@ -194,7 +207,11 @@ export default function RecruiterDashboard() {
             </p>
           </div>
           <button
-            onClick={() => setShowForm(f => !f)}
+            onClick={() => {
+              setEditingJobId(null)
+              setForm({ ...EMPTY_FORM, companyName: lockedCompanyName || '' })
+              setShowForm(f => !f)
+            }}
             className="flex items-center gap-2 bg-white dark:bg-blue-600 text-blue-700 dark:text-white font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-700 transition-all border-0 cursor-pointer shadow-md"
           >
             <Plus size={16} />
@@ -227,7 +244,8 @@ export default function RecruiterDashboard() {
         {showForm && (
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-6 mb-6">
             <h2 className="font-bold text-gray-800 dark:text-white mb-5 flex items-center gap-2">
-              <Plus size={16} className="text-blue-600 dark:text-blue-400" /> Post a New Job
+              {editingJobId ? <Edit size={16} className="text-blue-600 dark:text-blue-400" /> : <Plus size={16} className="text-blue-600 dark:text-blue-400" />} 
+              {editingJobId ? 'Edit Job' : 'Post a New Job'}
             </h2>
 
             {formError && (
@@ -236,7 +254,7 @@ export default function RecruiterDashboard() {
               </div>
             )}
 
-            <form onSubmit={handleCreateJob}>
+            <form onSubmit={handleSaveJob}>
               <div className="grid grid-cols-2 gap-4">
                 <FormField label="Job Title *" value={form.title}
                   onChange={v => setForm(p => ({ ...p, title: v }))} placeholder="e.g. Software Engineer" />
@@ -279,6 +297,10 @@ export default function RecruiterDashboard() {
                   onChange={v => setForm(p => ({ ...p, salary: v }))} placeholder="e.g. 15 LPA or 41-55 LPA" />
                 <FormField label="Experience" value={form.experience}
                   onChange={v => setForm(p => ({ ...p, experience: v }))} placeholder="e.g. 3-5 Years" />
+                
+                <FormField label="Application Deadline (Optional)" type="date" value={form.applicationDeadline}
+                  onChange={v => setForm(p => ({ ...p, applicationDeadline: v }))} placeholder="" />
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Job Type</label>
                   <select
@@ -316,9 +338,9 @@ export default function RecruiterDashboard() {
 
               <div className="flex gap-3 mt-5">
                 <button type="submit" disabled={saving} className="btn-primary disabled:opacity-60 py-2.5 px-8">
-                  {saving ? 'Posting…' : 'Post Job'}
+                  {saving ? 'Saving…' : (editingJobId ? 'Save Changes' : 'Post Job')}
                 </button>
-                <button type="button" onClick={() => { setShowForm(false); setForm({ ...EMPTY_FORM, companyName: lockedCompanyName || '' }); setFormError('') }}
+                <button type="button" onClick={() => { setShowForm(false); setEditingJobId(null); setForm({ ...EMPTY_FORM, companyName: lockedCompanyName || '' }); setFormError('') }}
                   className="bg-transparent border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 px-6 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors uppercase font-bold text-[10px] tracking-wider cursor-pointer">
                   Cancel
                 </button>
@@ -386,6 +408,27 @@ export default function RecruiterDashboard() {
                           className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline bg-transparent border-0 cursor-pointer font-medium"
                         >
                           <Eye size={13}/> View
+                        </button>
+                        <button
+                          onClick={() => {
+                            setForm({
+                              title: job.title || '',
+                              companyName: job.companyName || '',
+                              location: job.location || '',
+                              salary: job.salary || '',
+                              experience: job.experience || '',
+                              description: job.description || '',
+                              requiredSkills: job.requiredSkills?.join(', ') || '',
+                              jobType: job.jobType || 'FULL_TIME',
+                              applicationDeadline: job.applicationDeadline ? job.applicationDeadline.split('T')[0] : ''
+                            })
+                            setEditingJobId(job.id)
+                            setShowForm(true)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                          className="flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 bg-transparent border-0 cursor-pointer font-medium"
+                        >
+                          <Edit size={13}/> Edit
                         </button>
                         <button
                           onClick={() => toggleApplicants(job)}

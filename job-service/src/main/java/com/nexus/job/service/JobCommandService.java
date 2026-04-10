@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,6 +41,7 @@ public class JobCommandService {
                 .jobType(request.getJobType() != null ? request.getJobType() : JobType.FULL_TIME)
                 .postedBy(recruiterId)
                 .recruiterName(recruiterName)
+                .applicationDeadline(request.getApplicationDeadline() != null ? LocalDateTime.parse(request.getApplicationDeadline()) : null)
                 .build();
         Job saved = jobRepository.save(job);
         log.info("Job created: '{}' by recruiter {}", saved.getTitle(), recruiterId);
@@ -59,6 +61,7 @@ public class JobCommandService {
         if (request.getDescription() != null) job.setDescription(request.getDescription());
         if (request.getRequiredSkills() != null) job.setRequiredSkills(request.getRequiredSkills());
         if (request.getJobType() != null) job.setJobType(request.getJobType());
+        if (request.getApplicationDeadline() != null) job.setApplicationDeadline(LocalDateTime.parse(request.getApplicationDeadline()));
         
         return jobMapper.toResponse(jobRepository.save(job));
     }

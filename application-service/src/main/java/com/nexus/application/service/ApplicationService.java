@@ -62,6 +62,13 @@ public class ApplicationService {
             throw new IllegalStateException("Job is no longer active or does not exist");
         }
 
+        if (jobDto.getApplicationDeadline() != null && !jobDto.getApplicationDeadline().isBlank()) {
+            java.time.LocalDateTime deadline = java.time.LocalDateTime.parse(jobDto.getApplicationDeadline());
+            if (deadline.isBefore(java.time.LocalDateTime.now())) {
+                throw new IllegalStateException("Job application deadline has passed");
+            }
+        }
+
         if (applicationRepository.existsByUserIdAndJobId(userId, request.getJobId())) {
             throw new DuplicateApplicationException(
                     "You have already applied for this job. Track your application in your dashboard.");

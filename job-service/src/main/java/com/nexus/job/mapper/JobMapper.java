@@ -27,6 +27,7 @@ public class JobMapper {
         r.setRecruiterName(job.getRecruiterName());
         r.setActive(job.isActive());
         r.setCreatedAt(job.getCreatedAt() != null ? job.getCreatedAt().toString() : null);
+        r.setApplicationDeadline(job.getApplicationDeadline() != null ? job.getApplicationDeadline().toString() : null);
         r.setUpdatedAt(job.getUpdatedAt() != null ? job.getUpdatedAt().toString() : null);
         return r;
     }

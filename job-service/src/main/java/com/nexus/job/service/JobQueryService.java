@@ -28,7 +28,7 @@ public class JobQueryService {
 
     @Cacheable(value = "jobs")
     public List<JobResponse> getAllJobs() {
-        return jobRepository.findByIsActiveTrueOrderByCreatedAtDesc().stream().map(jobMapper::toResponse).toList();
+        return jobRepository.findAllActiveJobsSorted().stream().map(jobMapper::toResponse).toList();
     }
 
     @Cacheable(value = "job", key = "#a0")
@@ -37,17 +37,24 @@ public class JobQueryService {
         return jobMapper.toResponse(job);
     }
 
-    public List<JobResponse> searchJobs(String title, String location, String jobType, String experience, String salary) {
+    public List<JobResponse> searchJobs(String title, String location, String jobType,
+                                         String experience, String salary) {
         JobType type = null;
         if (jobType != null && !jobType.isBlank()) {
-            try { type = JobType.valueOf(jobType.toUpperCase()); } catch (IllegalArgumentException e) { log.warn("Invalid job type filter: {}", jobType); }
+            try {
+                type = JobType.valueOf(jobType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid job type filter: {}", jobType);
+            }
         }
-        String titleParam = (title != null && !title.isBlank()) ? title : null;
-        String locationParam = (location != null && !location.isBlank()) ? location : null;
-        String experienceParam = (experience != null && !experience.isBlank()) ? experience : null;
-        String salaryParam = (salary != null && !salary.isBlank()) ? salary : null;
 
-        return jobRepository.searchJobs(titleParam, locationParam, type, experienceParam, salaryParam).stream().map(jobMapper::toResponse).toList();
+        String titleParam      = (title != null && !title.isBlank()) ? title : null;
+        String locationParam   = (location != null && !location.isBlank()) ? location : null;
+        String experienceParam = (experience != null && !experience.isBlank()) ? experience : null;
+        String salaryParam     = (salary != null && !salary.isBlank()) ? salary : null;
+
+        return jobRepository.searchJobs(titleParam, locationParam, type, experienceParam, salaryParam)
+                .stream().map(jobMapper::toResponse).toList();
     }
 
     public List<JobResponse> getJobsByRecruiter(Long recruiterId) {

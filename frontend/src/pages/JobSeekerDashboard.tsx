@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Briefcase, Search, Clock, CheckCircle2, XCircle,
-  AlertCircle, TrendingUp, FileText, Eye, Hand, MessageSquare
+  AlertCircle, TrendingUp, FileText, Eye, Hand, MessageSquare, Trash2
 } from 'lucide-react'
 import { getMyApplications, withdrawApplication } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -17,6 +17,7 @@ export default function JobSeekerDashboard() {
   const [apps, setApps]      = useState([])
   const [loading, setLoading] = useState(true)
   const [withdrawing, setWithdrawing] = useState(null)
+  const [withdrawConfirmApp, setWithdrawConfirmApp] = useState<any>(null)
 
   useEffect(() => { loadApplications() }, [])
 
@@ -32,17 +33,27 @@ export default function JobSeekerDashboard() {
     }
   }
 
-  const handleWithdraw = async (appId) => {
-    if (!window.confirm('Withdraw this application?')) return
+  const handleWithdrawClick = (app: any) => {
+    setWithdrawConfirmApp(app)
+  }
+
+  const handleConfirmWithdraw = async () => {
+    if (!withdrawConfirmApp) return
+    const appId = withdrawConfirmApp.id
     setWithdrawing(appId)
     try {
       await withdrawApplication(appId)
       setApps(prev => prev.filter(a => a.id !== appId))
-    } catch (e) {
+      setWithdrawConfirmApp(null)
+    } catch (e: any) {
       alert(e.response?.data?.message || 'Could not withdraw application')
     } finally {
       setWithdrawing(null)
     }
+  }
+
+  const handleCancelWithdraw = () => {
+    setWithdrawConfirmApp(null)
   }
 
   // Stat counts
@@ -179,10 +190,11 @@ export default function JobSeekerDashboard() {
                       </button>
                       {(app.status === 'APPLIED' || app.status === 'UNDER_REVIEW') && (
                         <button
-                          onClick={() => handleWithdraw(app.id)}
+                          onClick={() => handleWithdrawClick(app)}
                           disabled={withdrawing === app.id}
-                          className="text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-transparent border-0 cursor-pointer disabled:opacity-50 font-medium"
+                          className="flex items-center gap-1.5 text-xs text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-transparent border-0 cursor-pointer disabled:opacity-50 font-medium px-2 py-1"
                         >
+                          <Trash2 size={13} />
                           {withdrawing === app.id ? 'Withdrawing…' : 'Withdraw'}
                         </button>
                       )}
@@ -196,6 +208,47 @@ export default function JobSeekerDashboard() {
             </div>
           )}
         </div>
+
+      {/* Withdraw Confirmation Modal */}
+      {withdrawConfirmApp && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md"
+          onClick={handleCancelWithdraw}
+        >
+          <div 
+            className="bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 border border-red-200 dark:border-red-800/50">
+                <AlertCircle size={32} className="text-red-500 dark:text-red-400" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Withdraw Application?</h3>
+              <p className="text-sm text-gray-600 dark:text-slate-400 mb-8 font-medium">
+                Are you sure you want to withdraw your application for <span className="font-bold text-gray-800 dark:text-slate-200">{withdrawConfirmApp.jobTitle}</span> at {withdrawConfirmApp.companyName}? This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={handleCancelWithdraw}
+                  disabled={withdrawing === withdrawConfirmApp.id}
+                  className="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm transition-colors cursor-pointer border-0 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleConfirmWithdraw}
+                  disabled={withdrawing === withdrawConfirmApp.id}
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors cursor-pointer border-0 shadow-lg shadow-red-500/20 disabled:opacity-50"
+                >
+                  {withdrawing === withdrawConfirmApp.id ? 'Withdrawing...' : 'Yes, Withdraw'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   )

@@ -30,6 +30,7 @@ public class JobDtos {
         private String description;
         private List<String> requiredSkills;
         private JobType jobType;
+        private String applicationDeadline;
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
@@ -47,6 +48,8 @@ public class JobDtos {
         public void setRequiredSkills(List<String> requiredSkills) { this.requiredSkills = requiredSkills; }
         public JobType getJobType() { return jobType; }
         public void setJobType(JobType jobType) { this.jobType = jobType; }
+        public String getApplicationDeadline() { return applicationDeadline; }
+        public void setApplicationDeadline(String applicationDeadline) { this.applicationDeadline = applicationDeadline; }
     }
 
     public static class UpdateJobRequest {
@@ -58,6 +61,7 @@ public class JobDtos {
         private String description;
         private List<String> requiredSkills;
         private JobType jobType;
+        private String applicationDeadline;
 
         public String getTitle() { return title; }
         public void setTitle(String title) { this.title = title; }
@@ -75,6 +79,8 @@ public class JobDtos {
         public void setRequiredSkills(List<String> requiredSkills) { this.requiredSkills = requiredSkills; }
         public JobType getJobType() { return jobType; }
         public void setJobType(JobType jobType) { this.jobType = jobType; }
+        public String getApplicationDeadline() { return applicationDeadline; }
+        public void setApplicationDeadline(String applicationDeadline) { this.applicationDeadline = applicationDeadline; }
     }
 
 
@@ -91,6 +97,7 @@ public class JobDtos {
         private Long postedBy;
         private String recruiterName;
         private boolean active;
+        private String applicationDeadline;
         private String createdAt;
         private String updatedAt;
 
@@ -120,6 +127,8 @@ public class JobDtos {
         public void setActive(boolean active) { this.active = active; }
         public String getCreatedAt() { return createdAt; }
         public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+        public String getApplicationDeadline() { return applicationDeadline; }
+        public void setApplicationDeadline(String applicationDeadline) { this.applicationDeadline = applicationDeadline; }
         public String getUpdatedAt() { return updatedAt; }
         public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
     }

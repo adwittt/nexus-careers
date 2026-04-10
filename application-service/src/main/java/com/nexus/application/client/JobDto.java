@@ -6,6 +6,7 @@ public class JobDto {
     private String companyName;
     private boolean isActive;
     private Long postedBy;
+    private String applicationDeadline;
 
     public JobDto() {}
 
@@ -19,4 +20,6 @@ public class JobDto {
     public void setActive(boolean active) { isActive = active; }
     public Long getPostedBy() { return postedBy; }
     public void setPostedBy(Long postedBy) { this.postedBy = postedBy; }
+    public String getApplicationDeadline() { return applicationDeadline; }
+    public void setApplicationDeadline(String applicationDeadline) { this.applicationDeadline = applicationDeadline; }
 }

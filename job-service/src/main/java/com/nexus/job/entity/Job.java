@@ -58,6 +58,9 @@ public class Job implements Serializable {
     @Column(name = "is_active")
     private boolean isActive = true;
 
+    @Column(name = "application_deadline")
+    private LocalDateTime applicationDeadline;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -70,7 +73,7 @@ public class Job implements Serializable {
 
     public Job(Long id, String title, String companyName, String location, String salary, String experience, 
                String description, List<String> requiredSkills, JobType jobType, Long postedBy, 
-               String recruiterName, boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+               String recruiterName, boolean isActive, LocalDateTime applicationDeadline, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.companyName = companyName;
@@ -83,6 +86,7 @@ public class Job implements Serializable {
         this.postedBy = postedBy;
         this.recruiterName = recruiterName;
         this.isActive = isActive;
+        this.applicationDeadline = applicationDeadline;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -111,6 +115,8 @@ public class Job implements Serializable {
     public void setRecruiterName(String recruiterName) { this.recruiterName = recruiterName; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
+    public LocalDateTime getApplicationDeadline() { return applicationDeadline; }
+    public void setApplicationDeadline(LocalDateTime applicationDeadline) { this.applicationDeadline = applicationDeadline; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -133,6 +139,7 @@ public class Job implements Serializable {
         private Long postedBy;
         private String recruiterName;
         private boolean isActive = true;
+        private LocalDateTime applicationDeadline;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -148,12 +155,13 @@ public class Job implements Serializable {
         public JobBuilder postedBy(Long postedBy) { this.postedBy = postedBy; return this; }
         public JobBuilder recruiterName(String recruiterName) { this.recruiterName = recruiterName; return this; }
         public JobBuilder isActive(boolean isActive) { this.isActive = isActive; return this; }
+        public JobBuilder applicationDeadline(LocalDateTime applicationDeadline) { this.applicationDeadline = applicationDeadline; return this; }
         public JobBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public JobBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
         public Job build() {
             return new Job(id, title, companyName, location, salary, experience, description, 
-                           requiredSkills, jobType, postedBy, recruiterName, isActive, createdAt, updatedAt);
+                           requiredSkills, jobType, postedBy, recruiterName, isActive, applicationDeadline, createdAt, updatedAt);
         }
     }
 }

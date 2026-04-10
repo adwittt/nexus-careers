@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { SlidersHorizontal, Search, Briefcase, TrendingUp } from 'lucide-react'
+import { SlidersHorizontal, Search, Briefcase, TrendingUp, X } from 'lucide-react'
 import { getAllJobs, getMyApplications } from '../services/api'
 import JobCard from '../components/JobCard'
 
@@ -99,7 +99,7 @@ function parseSalaryLPA(raw: string | null | undefined): number {
 interface FilterState {
   title: string
   location: string
-  jobType: string
+  jobType: string[]
   minExperience: number
   minSalary: number
 }
@@ -111,7 +111,7 @@ export default function JobSearchPage() {
   const [userApps, setUserApps]   = useState<Record<string, any>>({})
   const [loading, setLoading]     = useState(true)
   const [page, setPage]           = useState(1)
-  const perPage = 10
+  const perPage = 5
 
   const user = JSON.parse(localStorage.getItem('nexus_user') || '{}')
   const isSeeker = user?.role === 'JOB_SEEKER'
@@ -120,7 +120,7 @@ export default function JobSearchPage() {
   const [filters, setFilters] = useState<FilterState>({
     title:         searchParams.get('title')    || '',
     location:      searchParams.get('location') || '',
-    jobType:       searchParams.get('jobType')  || '',
+    jobType:       searchParams.get('jobType') ? [searchParams.get('jobType')!] : [],
     minExperience: 0,
     minSalary:     0,
   })
@@ -129,6 +129,9 @@ export default function JobSearchPage() {
   const [expanded, setExpanded] = useState({
     title: true, location: true, experience: true, salary: true, jobType: true
   })
+
+  // Mobile filter drawer
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   useEffect(() => { loadJobs() }, [])
 
@@ -171,9 +174,9 @@ export default function JobSearchPage() {
         if (!locMatch) return false
       }
 
-      // Job type filter
-      if (filters.jobType) {
-        if (job.jobType !== filters.jobType) return false
+      // Job type filter (multiple selections support: OR logic)
+      if (filters.jobType && filters.jobType.length > 0) {
+        if (!filters.jobType.includes(job.jobType)) return false
       }
 
       // Experience filter: show jobs where required experience >= user's selected minimum
@@ -205,28 +208,50 @@ export default function JobSearchPage() {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
 
   const toggleJobType = (type: string) =>
-    setFilters(prev => ({ ...prev, jobType: prev.jobType === type ? '' : type }))
+    setFilters(prev => {
+      const current = prev.jobType || [];
+      const updated = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
+      return { ...prev, jobType: updated };
+    });
 
   const clearFilters = () => {
-    setFilters({ title: '', location: '', jobType: '', minExperience: 0, minSalary: 0 })
+    setFilters({ title: '', location: '', jobType: [], minExperience: 0, minSalary: 0 })
     setPage(1)
   }
 
   return (
-    <div className="min-h-screen bg-blue-700 dark:bg-slate-900 transition-colors">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#020817] transition-colors py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-        <div className="flex gap-5">
+        {/* Mobile filter toggle button */}
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="lg:hidden w-full flex items-center justify-center gap-2 mb-4 px-4 py-3 bg-white dark:bg-slate-900/50 rounded-xl border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-white font-bold text-sm shadow-sm cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-slate-800"
+        >
+          <SlidersHorizontal size={16} className="text-blue-600" />
+          {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+        </button>
+
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
 
           {/* ── Filter Sidebar ───────────────────────────────────────────── */}
-          <aside className="w-56 flex-shrink-0">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 border border-transparent dark:border-slate-700">
-              <h3 className="font-bold text-gray-800 dark:text-white text-sm mb-4 flex items-center gap-2">
-                <SlidersHorizontal size={15} className="text-blue-600 dark:text-blue-400" />
-                Filter by
-              </h3>
+          <aside className={`w-full lg:w-72 flex-shrink-0 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl shadow-xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800/80 sticky top-24 z-10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <SlidersHorizontal size={16} className="text-blue-600 dark:text-blue-400" />
+                  </div>
+                  Filter by
+                </h3>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="lg:hidden p-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-500 border-0 cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-              {/* Title filter */}
               <FilterSection
                 label="Title" open={expanded.title}
                 onToggle={() => toggleSection('title')}
@@ -234,12 +259,11 @@ export default function JobSearchPage() {
                 <input
                   value={filters.title}
                   onChange={e => setFilters(p => ({ ...p, title: e.target.value }))}
-                  placeholder="Search by title..."
-                  className="input-field text-xs py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  placeholder="e.g. Software Engineer"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all text-gray-900 dark:text-white text-sm font-medium"
                 />
               </FilterSection>
 
-              {/* Location filter */}
               <FilterSection
                 label="Location" open={expanded.location}
                 onToggle={() => toggleSection('location')}
@@ -247,12 +271,11 @@ export default function JobSearchPage() {
                 <input
                   value={filters.location}
                   onChange={e => setFilters(p => ({ ...p, location: e.target.value }))}
-                  placeholder="Search by location..."
-                  className="input-field text-xs py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  placeholder="e.g. Remote, or City"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all text-gray-900 dark:text-white text-sm font-medium"
                 />
               </FilterSection>
 
-              {/* Salary filter — dropdown with >= logic */}
               <FilterSection
                 label={<span className="flex items-center gap-1.5"><TrendingUp size={11} className="text-green-500" /> Min. Salary</span>}
                 open={expanded.salary}
@@ -264,7 +287,7 @@ export default function JobSearchPage() {
                     setFilters(p => ({ ...p, minSalary: parseFloat(e.target.value) }))
                     setPage(1)
                   }}
-                  className="input-field text-xs py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-white cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all text-gray-900 dark:text-white text-sm font-medium cursor-pointer"
                 >
                   {SALARY_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -277,7 +300,6 @@ export default function JobSearchPage() {
                 )}
               </FilterSection>
 
-              {/* Experience filter — dropdown with >= logic */}
               <FilterSection
                 label={<span className="flex items-center gap-1.5"><Briefcase size={11} className="text-orange-500" /> Min. Experience</span>}
                 open={expanded.experience}
@@ -289,7 +311,7 @@ export default function JobSearchPage() {
                     setFilters(p => ({ ...p, minExperience: parseFloat(e.target.value) }))
                     setPage(1)
                   }}
-                  className="input-field text-xs py-2 dark:bg-slate-700 dark:border-slate-600 dark:text-white cursor-pointer"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900/60 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all text-gray-900 dark:text-white text-sm font-medium cursor-pointer"
                 >
                   {EXPERIENCE_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -302,21 +324,20 @@ export default function JobSearchPage() {
                 )}
               </FilterSection>
 
-              {/* Job Type filter */}
               <FilterSection
                 label="Job Type" open={expanded.jobType}
                 onToggle={() => toggleSection('jobType')}
               >
                 <div className="space-y-2">
                   {JOB_TYPES.map(type => (
-                    <label key={type} className="flex items-center gap-2 cursor-pointer">
+                    <label key={type} className="flex items-center gap-2 cursor-pointer group">
                       <input
                         type="checkbox"
-                        checked={filters.jobType === type}
+                        checked={(filters.jobType || []).includes(type)}
                         onChange={() => { toggleJobType(type); setPage(1) }}
-                        className="accent-blue-600 w-3.5 h-3.5"
+                        className="accent-blue-600 w-4 h-4 rounded border-gray-300 dark:border-slate-600 cursor-pointer transition-all"
                       />
-                      <span className="text-xs text-gray-700 dark:text-slate-300 transition-colors">
+                      <span className="text-sm font-medium text-gray-700 dark:text-slate-300 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
                         {type === 'FULL_TIME' ? 'Full-time'
                           : type === 'PART_TIME' ? 'Part-time'
                           : type.charAt(0) + type.slice(1).toLowerCase()}
@@ -329,16 +350,16 @@ export default function JobSearchPage() {
               {/* Clear */}
               <button
                 onClick={clearFilters}
-                className="w-full text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 mt-1.5 bg-transparent border-0 cursor-pointer py-1 transition-colors"
+                className="w-full text-sm font-bold text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white mt-6 bg-gray-50 dark:bg-slate-800/80 hover:bg-gray-200 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-xl cursor-pointer py-3 transition-all duration-200 shadow-sm"
               >
-                Clear all
+                Clear all filters
               </button>
             </div>
           </aside>
 
           {/* ── Results Panel ────────────────────────────────────────────── */}
-          <main className="flex-1">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-transparent dark:border-slate-700">
+          <main className="flex-1 min-w-0">
+            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 border border-gray-200 dark:border-slate-800/80">
 
               {/* Header row */}
               <div className="flex items-center justify-between mb-4">
@@ -391,16 +412,16 @@ export default function JobSearchPage() {
               )}
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-1.5 mt-6 pt-4 border-t border-gray-100">
-                  <PagBtn label="‹" onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1} />
+              <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t border-gray-100 dark:border-slate-800/60">
+                <PagBtn label="Previous" onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1} isText />
+                <div className="flex gap-1 hidden sm:flex">
                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
                     <PagBtn key={p} label={String(p)} onClick={() => setPage(p)} active={page===p} />
                   ))}
-                  {totalPages > 5 && <span className="text-gray-400 text-sm">…</span>}
-                  <PagBtn label="›" onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages} />
                 </div>
-              )}
+                {totalPages > 5 && <span className="text-gray-400 text-sm font-medium px-2 hidden sm:inline">…</span>}
+                <PagBtn label="Next" onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages} isText />
+              </div>
             </div>
           </main>
         </div>
@@ -420,13 +441,15 @@ interface FilterSectionProps {
 
 function FilterSection({ label, open, onToggle, children }: FilterSectionProps) {
   return (
-    <div className="mb-4 border-b border-gray-100 dark:border-slate-700/50 pb-3">
+    <div className="mb-5 border-b border-gray-100 dark:border-slate-700/50 pb-4 last:border-0 last:pb-0">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2 bg-transparent border-0 cursor-pointer transition-colors"
+        className="flex items-center justify-between w-full text-sm font-bold text-gray-800 dark:text-slate-200 mb-3 bg-transparent border-0 cursor-pointer transition-colors group"
       >
         {label}
-        <span className="text-gray-400 dark:text-slate-500">{open ? '∧' : '∨'}</span>
+        <span className="text-gray-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors">
+          {open ? '—' : '+'}
+        </span>
       </button>
       {open && children}
     </div>
@@ -438,17 +461,23 @@ interface PagBtnProps {
   onClick: () => void
   active?: boolean
   disabled?: boolean
+  isText?: boolean
 }
 
-function PagBtn({ label, onClick, active, disabled }: PagBtnProps) {
+function PagBtn({ label, onClick, active, disabled, isText }: PagBtnProps) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-7 h-7 text-xs rounded flex items-center justify-center border transition-colors cursor-pointer
-        ${active   ? 'bg-blue-700 text-white border-blue-700 shadow-md'
-        : disabled ? 'text-gray-300 dark:text-slate-600 border-gray-200 dark:border-slate-700 cursor-not-allowed'
-        :            'text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 bg-white dark:bg-slate-800 shadow-sm'}`}
+      className={`
+        ${isText ? 'px-4 py-2 w-auto' : 'w-10 h-10'} 
+        text-sm font-bold rounded-lg flex items-center justify-center border transition-all duration-200 cursor-pointer
+        ${active   
+          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+          : disabled 
+            ? 'text-gray-400 dark:text-slate-600 border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/30 cursor-not-allowed hidden sm:flex'
+            : 'text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 bg-white dark:bg-slate-800 shadow-sm'}
+      `}
     >
       {label}
     </button>

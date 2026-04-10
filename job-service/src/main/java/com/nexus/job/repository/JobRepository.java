@@ -15,11 +15,16 @@ import java.util.List;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-    List<Job> findByIsActiveTrueOrderByCreatedAtDesc();
+    /**
+     * Get all active jobs. Non-expired jobs come first, expired jobs at the end.
+     */
+    @Query("SELECT j FROM Job j WHERE j.isActive = true ORDER BY CASE WHEN j.applicationDeadline IS NOT NULL AND j.applicationDeadline < CURRENT_TIMESTAMP THEN 1 ELSE 0 END ASC, j.createdAt DESC")
+    List<Job> findAllActiveJobsSorted();
 
     /**
      * Dynamic search with optional filters.
      * All parameters are optional - null values are ignored.
+     * Non-expired jobs come first, expired jobs at the end.
      */
     @Query("""
         SELECT DISTINCT j FROM Job j
@@ -29,7 +34,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
         AND (:jobType IS NULL OR j.jobType = :jobType)
         AND (:experience IS NULL OR LOWER(j.experience) LIKE LOWER(CONCAT('%', :experience, '%')))
         AND (:salary IS NULL OR LOWER(j.salary) LIKE LOWER(CONCAT('%', :salary, '%')))
-        ORDER BY j.createdAt DESC
+        ORDER BY CASE WHEN j.applicationDeadline IS NOT NULL AND j.applicationDeadline < CURRENT_TIMESTAMP THEN 1 ELSE 0 END ASC, j.createdAt DESC
     """)
      List<Job> searchJobs(
             @Param("title") String title,

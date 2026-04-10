@@ -8,6 +8,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -102,20 +104,24 @@ public class AdminService {
         List<Map<String, Object>> jobs  = getAllJobs(bearerToken);
         Map<String, Object> appStats    = getApplicationStats(bearerToken);
 
-        long totalUsers     = users.size();
-        long jobSeekers     = users.stream().filter(u -> "JOB_SEEKER".equals(u.get("role"))).count();
-        long recruiters     = users.stream().filter(u -> "RECRUITER".equals(u.get("role"))).count();
-        long totalJobs      = jobs.size();
-        long activeJobs     = jobs.stream().filter(j -> Boolean.TRUE.equals(j.get("active"))).count();
+        long totalUsers  = users.size();
+        long jobSeekers  = users.stream().filter(u -> "JOB_SEEKER".equals(u.get("role"))).count();
+        long recruiters  = users.stream().filter(u -> "RECRUITER".equals(u.get("role"))).count();
+        long totalJobs   = jobs.size();
 
-        return Map.of(
-            "totalUsers",    totalUsers,
-            "jobSeekers",    jobSeekers,
-            "recruiters",    recruiters,
-            "totalJobs",     totalJobs,
-            "activeJobs",    activeJobs,
-            "applications",  appStats
-        );
+        LocalDateTime now = LocalDateTime.now();
+        long activeJobs  = jobs.stream().filter(j -> Boolean.TRUE.equals(j.get("active")) && !isDeadlinePast(j, now)).count();
+        long expiredJobs = jobs.stream().filter(j -> Boolean.TRUE.equals(j.get("active")) && isDeadlinePast(j, now)).count();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalUsers", totalUsers);
+        result.put("jobSeekers", jobSeekers);
+        result.put("recruiters", recruiters);
+        result.put("totalJobs", totalJobs);
+        result.put("activeJobs", activeJobs);
+        result.put("expiredJobs", expiredJobs);
+        result.put("applications", appStats);
+        return result;
     }
 
     /**
@@ -137,11 +143,23 @@ public class AdminService {
         }
     }
 
-
     private HttpHeaders buildHeaders(String bearerToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", bearerToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
+    }
+
+    /**
+     * Check if a job's applicationDeadline is in the past.
+     */
+    private boolean isDeadlinePast(Map<String, Object> job, LocalDateTime now) {
+        Object deadline = job.get("applicationDeadline");
+        if (deadline == null) return false;
+        try {
+            return LocalDateTime.parse(deadline.toString()).isBefore(now);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

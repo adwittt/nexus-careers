@@ -23,6 +23,7 @@ interface Job {
   jobType?: string;
   createdAt?: string;
   active?: boolean;
+  applicationDeadline?: string;
 }
 
 interface ReportData {
@@ -31,6 +32,7 @@ interface ReportData {
   recruiters?: number;
   totalJobs?: number;
   activeJobs?: number;
+  expiredJobs?: number;
   applications?: {
     total?: number;
     shortlisted?: number;
@@ -361,11 +363,21 @@ export default function AdminDashboard() {
                           {j.createdAt ? new Date(j.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric'}) : '—'}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                            j.active !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                          }`}>
-                            {j.active !== false ? '● Active' : '○ Closed'}
-                          </span>
+                          {(() => {
+                            const isExpired = j.applicationDeadline && new Date(j.applicationDeadline) < new Date();
+                            const isActive = j.active !== false;
+                            const statusClass = !isActive
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                              : isExpired
+                                ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                                : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400';
+                            const statusText = !isActive ? '○ Closed' : isExpired ? '⏰ Expired' : '● Active';
+                            return (
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-tight ${statusClass}`}>
+                                {statusText}
+                              </span>
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))}
@@ -388,7 +400,7 @@ export default function AdminDashboard() {
               <ReportCard title="Job Listings" items={[
                 { label: 'Total Posted',   value: report?.totalJobs    ?? '—' },
                 { label: 'Active',         value: report?.activeJobs   ?? '—' },
-                { label: 'Closed',         value: ((report?.totalJobs||0) - (report?.activeJobs||0)) || '—' },
+                { label: 'Expired',        value: report?.expiredJobs ?? '—' },
               ]} color="green"/>
               <ReportCard title="Applications" items={[
                 { label: 'Total',          value: report?.applications?.total      ?? '—' },
