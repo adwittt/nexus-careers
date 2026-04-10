@@ -36,11 +36,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      
+      - name: Check Environment
+        run: |
+          /opt/homebrew/bin/node -v
+          /opt/homebrew/bin/npm -v
+
       - name: Install and Build
         working-directory: frontend
         run: |
-          npm install
-          npm run build
+          /opt/homebrew/bin/npm install
+          /opt/homebrew/bin/npm run build
 
   # 3. Overall Stack Deployment
   deploy-to-local:
@@ -54,7 +60,7 @@ jobs:
 
       - name: Start Full Stack in Docker Desktop
         run: |
-          export PATH=$PATH:/Applications/Docker.app/Contents/Resources/bin
+          export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
           echo "Starting the deployment on Adwit's Mac..."
           docker compose down
           docker compose up -d --build
